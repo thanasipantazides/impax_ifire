@@ -20,6 +20,17 @@ __all__ = [
 ]
 
 
+class IFireNBinChangedException(ValueError):
+    """
+    Error when IFIRE energy bin count (`nbin`) changes within a single telemetry file.
+
+    This can be raised by the parser when handling raw telemetry files, and can be handled to retry parsing and start fresh CDF files after the nbin change offset in the file.
+
+    The message of IFireNBinChangedException should be an int offset into a raw telemetry file. The offset should mark the start of the packet at which `nbin` changes value.
+
+    """
+
+
 class iFireWarning(Warning):
     """
     The base warning class from which all IMPAX IFIRE warnings should inherit.
