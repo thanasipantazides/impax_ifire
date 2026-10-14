@@ -2,11 +2,13 @@
 This module provides a generic file reader.
 """
 
+import os
 import sys
 
 import numpy as np
 
-from ..util.exceptions import IFireNBinChangedException
+from ..io.cdf import cdf_from_500
+from ..util.exceptions import IFireNBinChangedError
 
 __all__ = ["read_file"]
 
@@ -29,7 +31,9 @@ def ccsds_secondary_flag(k: int, buff: bytes):
 
 def apid(k: int, buff: bytes):
     """Get the APID of this CCSDS packet, assuming k is at the beginning of the packet."""
-    return 0x7FF & int.from_bytes(buff[k : k + 2], byteorder="big", signed=False)
+    id = 0x7FF & int.from_bytes(buff[k : k + 2], byteorder="big", signed=False)
+    assert id == 0x500
+    return id
 
 
 def sequence_flag(k: int, buff: bytes):
@@ -56,8 +60,11 @@ def accum(k: int, buff: bytes):
 def nbin(k: int, buff: bytes, last_nbin: int = 0):
     nbin = 0xFF & buff[k + 8]
 
+    if nbin < 4 or nbin > 128:
+        raise ValueError(f"FIRE {nbin=} out of valid range 4-128.")
+
     if last_nbin != 0 and nbin != last_nbin:
-        raise IFireNBinChangedException(k)
+        raise IFireNBinChangedError(k)
 
     return nbin
 
@@ -111,6 +118,7 @@ def bins(k: int, buff: bytes, pflags: int, nbin: int):
     nbytes = 2 * (nbin + 2)
 
     # fill up the bins with NaNs for any channel which is not enabled.
+    #   todo: consider using a uint16 for this. Which does not support NaN. So a sentinel missing value would be needed.
     bins = np.empty(nbytes)
     bins[:] = np.nan
 
@@ -124,6 +132,7 @@ def bins(k: int, buff: bytes, pflags: int, nbin: int):
             bins[kout] = binval
             kbin += 2
             kout += 1
+
     kout = len(bins) // 2
 
     if enach2:
@@ -183,7 +192,6 @@ def parse_fire(file: str, start_offset: int = 0):
         seq_count = sequence_count(k, buff)
         L = length(k, buff)
 
-        assert id == 0x500
         assert packet_type == 0
 
         this_pflags = pflags(k, buff)
@@ -197,12 +205,13 @@ def parse_fire(file: str, start_offset: int = 0):
             # rewrite the type signature and reinitialize the result array to hold nbins worth of bins:
             ptype = np.dtype(ptype.descr + [("bins", np.uint16, 2 * (this_nbin + 2))])
             if len(res) != 0:
-                raise IFireNBinChangedException(k)
+                raise IFireNBinChangedError(k)
             res = np.empty(0, dtype=ptype)
             nbins_known = True
 
         this_mux = mux(k, buff)
         this_hk = hk(k, buff, this_mux)
+
         this_ttag = ttag(k, buff)
         this_base1 = base1(k, buff)
         this_base2 = base2(k, buff)
@@ -265,3 +274,7 @@ def read_file(data_filename):
 
 if __name__ == "__main__":
     p = parse_fire(sys.argv[1])
+
+    cdf = cdf_from_500(
+        p, sys.argv[1], os.path.join(os.path.dirname(__file__), "..", "data", "log")
+    )
