@@ -13,9 +13,6 @@ from ..util.exceptions import IFireNBinChangedError
 __all__ = ["read_file"]
 
 
-FIRE_APID = 0x500
-
-
 def ccsds_version_number(k: int, buff: bytes):
     """Get CCSDS version number of this packet, assuming k is a the beginning of a packet,"""
     return 7 & (buff[k] >> 5)
