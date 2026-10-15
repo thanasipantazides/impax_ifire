@@ -2,8 +2,11 @@
 This module provides a generic file reader.
 """
 
+import csv
 import os
 import sys
+from enum import Enum
+from multiprocessing import Value
 
 import numpy as np
 
@@ -11,6 +14,19 @@ from ..io.cdf import cdf_from_500
 from ..util.exceptions import IFireNBinChangedError
 
 __all__ = ["read_file"]
+
+demux_file_path = os.path.join(
+    os.path.dirname(__file__), "..", "data", "ifire-hk-demux-rules.csv"
+)
+
+
+class FireParams(Enum):
+    NBIN_MIN = 4
+    NBIN_MAX = 128
+    TOTAL_BINS = 130
+    VALID_APID = 0x500
+    # BIN_PAD = 0xFFFF
+    FILLVAL = 0xFFFF
 
 
 def ccsds_version_number(k: int, buff: bytes):
@@ -29,7 +45,8 @@ def ccsds_secondary_flag(k: int, buff: bytes):
 def apid(k: int, buff: bytes):
     """Get the APID of this CCSDS packet, assuming k is at the beginning of the packet."""
     id = 0x7FF & int.from_bytes(buff[k : k + 2], byteorder="big", signed=False)
-    assert id == 0x500
+    if id != FireParams.VALID_APID.value:
+        raise ValueError
     return id
 
 
@@ -116,8 +133,10 @@ def bins(k: int, buff: bytes, pflags: int, nbin: int):
 
     # fill up the bins with NaNs for any channel which is not enabled.
     #   todo: consider using a uint16 for this. Which does not support NaN. So a sentinel missing value would be needed.
-    bins = np.empty(nbytes)
-    bins[:] = np.nan
+
+    bins_ch1 = np.empty(FireParams.TOTAL_BINS.value, dtype=np.uint16)
+    bins_ch1.fill(FireParams.FILLVAL.value)
+    bins_ch2 = bins_ch1
 
     kbin = 24
     kout = 0
@@ -126,22 +145,22 @@ def bins(k: int, buff: bytes, pflags: int, nbin: int):
             binval = int.from_bytes(
                 buff[k + kbin : k + kbin + 2], byteorder="little", signed=False
             )
-            bins[kout] = binval
+            bins_ch1[kout] = binval
             kbin += 2
             kout += 1
 
-    kout = len(bins) // 2
+    kout = 0
 
     if enach2:
         while kbin < 24 + 2 * nbytes:
             binval = int.from_bytes(
                 buff[k + kbin : k + kbin + 2], byteorder="little", signed=False
             )
-            bins[kout] = binval
+            bins_ch2[kout] = binval
             kbin += 2
             kout += 1
 
-    return bins
+    return bins_ch1, bins_ch2
 
 
 def parse_fire(file: str, start_offset: int = 0):
@@ -172,11 +191,11 @@ def parse_fire(file: str, start_offset: int = 0):
             ("base2", np.uint16),
             ("rate1", np.uint16),
             ("rate2", np.uint16),
+            ("bins_ch1", np.uint16, FireParams.TOTAL_BINS.value),
+            ("bins_ch2", np.uint16, FireParams.TOTAL_BINS.value),
         ]
     )
     res = np.empty(0, dtype=ptype)
-
-    nbins_known = False
 
     k = start_offset
     last_nbin = 0
@@ -197,15 +216,6 @@ def parse_fire(file: str, start_offset: int = 0):
         # note: if this raises, the caller of parse_fire should handle.
         this_nbin = nbin(k, buff, last_nbin=last_nbin)
 
-        # if all_bins is uninitialized, initialize it with the newfound nbin value.
-        if not nbins_known:
-            # rewrite the type signature and reinitialize the result array to hold nbins worth of bins:
-            ptype = np.dtype(ptype.descr + [("bins", np.uint16, 2 * (this_nbin + 2))])
-            if len(res) != 0:
-                raise IFireNBinChangedError(k)
-            res = np.empty(0, dtype=ptype)
-            nbins_known = True
-
         this_mux = mux(k, buff)
         this_hk = hk(k, buff, this_mux)
 
@@ -214,7 +224,7 @@ def parse_fire(file: str, start_offset: int = 0):
         this_base2 = base2(k, buff)
         this_rate1 = rate1(k, buff)
         this_rate2 = rate2(k, buff)
-        this_bins = bins(k, buff, this_pflags, this_nbin)
+        this_bins_ch1, this_bins_ch2 = bins(k, buff, this_pflags, this_nbin)
 
         thisp = [
             (
@@ -235,7 +245,8 @@ def parse_fire(file: str, start_offset: int = 0):
                 this_base2,
                 this_rate1,
                 this_rate2,
-                this_bins,
+                this_bins_ch1,
+                this_bins_ch2,
             )
         ]
 
@@ -248,6 +259,75 @@ def parse_fire(file: str, start_offset: int = 0):
     # turn this into a dict, CCSDSPy wannabe
     d = {k: res[k] for k in ptype.names}
     return d
+
+
+def promote(base: str):
+    if base == "uint8":
+        return "uint16"
+    elif base == "uint16":
+        return "uint32"
+    elif base == "uint32":
+        return "uint64"
+    elif base == "int8":
+        return "int16"
+    elif base == "int16":
+        return "int32"
+    elif base == "int32":
+        return "int64"
+    else:
+        raise ValueError
+
+
+def str2dtype(s: str):
+    if s == "uint8":
+        return np.uint8
+
+
+def demux_hk(p: dict, rules: str = demux_file_path):
+
+    with open(rules, "r") as f:
+        reader = csv.DictReader(f)
+        mux_map = {}
+        for row in reader:
+            mux_map[row["HK"]] = {
+                "MUX": int(row["MUX"]),
+                "HK": row["HK"],
+                "Side": row["Side"],
+                "Type": row["Type"],
+                "Raw": int(row["Raw"]),
+                "Promote": int(row["Promote"]),
+                "Static": int(row["Static"]),
+                "Description": row["Description"],
+            }
+
+    for key, val in mux_map.items():
+        if val["Static"]:
+            continue
+
+        if val["Promote"]:
+            this_type = np.dtype(promote(val["Type"]))
+        else:
+            this_type = np.dtype(val["Type"])
+
+        mask = np.iinfo(val["Type"]).max
+        typemax = np.iinfo(this_type).max
+        res = np.full(len(p["hk"]), typemax, dtype=this_type)
+        # little endian: >> for LSB and mask for MSB.
+        if val["Side"] == "LSB":
+            shift = 8
+        else:
+            shift = 0
+
+        res[p["mux"] == val["MUX"]] = (
+            (p["hk"][p["mux"] == val["MUX"]]).astype(this_type) >> shift
+        ) & mask
+
+        name = val["HK"]
+        if val["Raw"]:
+            name += "_RAW"
+        p[name] = res
+
+    return p
 
 
 def read_file(data_filename):
@@ -272,6 +352,10 @@ def read_file(data_filename):
 if __name__ == "__main__":
     p = parse_fire(sys.argv[1])
 
+    p = demux_hk(p)
+
+    [print(k) for k in p]
+    # print(p.keys())
     cdf = cdf_from_500(
         p, sys.argv[1], os.path.join(os.path.dirname(__file__), "..", "data", "log")
     )

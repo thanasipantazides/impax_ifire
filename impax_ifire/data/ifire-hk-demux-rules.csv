@@ -1,0 +1,36 @@
+HK,MUX,Side,Description,Raw,Type,Promote,Static
+FAULT,0,all,Fault status bits,0,uint16,1,0
+CFLAG,1,MSB,Command flags,0,uint8,1,0
+NBIN,1,LSB,Number of uniform bins,0,uint8,0,1
+NACC,2,MSB,Number 50ms accumulations,0,uint8,0,0
+SHIFT,2,LSB,Bin scaling. Coarse gain power of 2,1,uint8,0,1
+GAIN1,3,MSB,Bin scaling. Fine gain adjust CH1,1,uint8,0,1
+GAIN2,3,LSB,Bin scaling. Fine gain adjust CH2,1,uint8,0,1
+OFF1,4,all,Bin scaling. Energy oﬀset CH1,1,uint16,0,1
+OFF2,5,all,Bin scaling. Energy oﬀset CH2,1,uint16,0,1
+CF1,6,all,Baseline correction factor CH1,1,uint16,0,1
+CF2,7,all,Baseline correction factor CH2,1,uint16,0,1
+TH1,8,all,Low level discriminator threshold CH1,1,uint16,0,1
+TH2,9,all,Low level discriminator threshold CH2,1,uint16,0,1
+SEU,10,all,SEU correction interval mask,1,uint16,0,0
+AUTO,11,all,Auto Accumulate rate limit,1,uint16,0,0
+EDGE1,12,all,Energy edge 1 (for NBIN=5 mode),1,uint16,0,1
+EDGE2,13,all,Energy edge 2,1,uint16,0,1
+EDGE3,14,all,Energy edge 3,1,uint16,0,1
+EDGE4,15,all,Energy edge 4,1,uint16,0,1
+EDGE5,16,all,Energy edge 5,1,uint16,0,1
+EDGE6,17,all,Energy edge 6,1,uint16,0,1
+V5B,18,all,5V analog supply voltage monitor,1,uint16,0,0
+HVI,19,all,High voltage current monitor,1,uint16,0,0
+DET_TEMP,20,all,Detector temperature.,1,uint16,0,0
+CPU_TEMP,21,all,Processor internal temperature,1,uint16,0,0
+3V3,22,all,3.3V supply voltage monitor,1,uint16,0,0
+SPARE_23,23,all,Always 23,0,uint16,0,0
+CAL1,24,all,Calibration pulse height CH1,1,uint16,0,0
+CAL2,25,all,Calibration pulse height CH1,1,uint16,0,0
+CMD,26,all,Sequence number of last command,0,uint16,1,0
+TSET,27,all,Correction at last time-set command,1,int16,0,0
+TOT1,28,all,Long term accumulation RATE1,1,uint16,0,0
+TOT2,29,all,Long term accumulation RATE2,1,uint16,0,0
+CLOCK,30,all,Internal clock correction factor,0,uint16,0,0
+SEQ,31,all,High order packet sequence counter,0,uint16,1,0

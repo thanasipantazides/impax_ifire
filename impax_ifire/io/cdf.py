@@ -6,24 +6,10 @@ import astropy.time
 import numpy as np
 from spacepy import pycdf
 
-# CDF global fields:
-#
-#   - APID
-#   - SRC_FILE
-#   - INST
-#   - MISS
-#   - PI
-#   - LEVEL
-#   - QUALITY
-#   - FILE_VERSION
-#   - GENERATED_BY
-#   - LINK
-#
-#  zVariables:
-#   - EPOCH
-#       - TIME
-#       - UNITS
-#       - DEPEND_1
+# note: this should point to a template .cdf file, not a plaintext skeleton file.
+fire_l0_skeleton_path = os.path.join(
+    os.path.dirname(__file__), "..", "data", "impax_ifire_skeleton-L0.cdf"
+)
 
 
 def cdf_defaults_hk(save_path: str):
@@ -122,95 +108,48 @@ def cdf_make_epoch(fields, cdf):
     return cdf
 
 
-def cdf_from_500(fields, src_file: str, save_path: str):
-    cdf = cdf_defaults_sci(save_path)
-    cdf = cdf_make_epoch(fields, cdf)
+def cdf_from_500(
+    fields,
+    src_file: str,
+    save_path: str,
+    skeleton_path=fire_l0_skeleton_path,
+):
+    logical_source = "impax_ifire_l0"
+    data_version = "0"
+    datestr = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")
+    fname = f"{logical_source}_{datestr}_L{data_version}"
+    fpath = os.path.join(save_path, fname + ".cdf")
 
-    # build energy distribution:
-    # - see what nbins is
-    # - do something with nan (maybe just default?)
-    #
-    # nbins == 5: check energy edges.
-    #
+    cdf = pycdf.CDF(fpath, skeleton_path)
 
-    # I have error handling to make sure all nbin are identical earlier.
-    nbin = fields["nbin"][0]
+    # Epoch
+    cdf["Epoch"][...] = fields["ttag"].astype(np.uint64) * 1e7
 
-    mux = fields["mux"]
-    hk = fields["hk"]
-    # print(np.unique(hk[mux[12:18]]))
-    # print(f"{nbin=}")
+    # Bins
+    cdf["BINS_CH1_RAW"][...] = fields["bins_ch1"]
+    cdf["BINS_CH2_RAW"][...] = fields["bins_ch2"]
 
-    if nbin == 5:
-        # do a whole song and dance to pull the energy edges out of HK.
-        eedges_adc = np.unique(hk[mux[12:18]])
-        eedges_kev = eedges_adc / 32.7
-    else:
-        # can still pull energy-space bin values out of HK
-        pass
-
-    # add the ADC bin list
-    adc1 = cdf.new("Bins_CH1", type=pycdf.const.CDF_UINT1, recVary=True)
-    adc1[...] = range(0, nbin + 2, 1)
-    adc1.attrs["VAR_TYPE"] = "support_data"
-    adc1.attrs["FIELDNAM"] = "Bin Index"
-    adc1.attrs["DEPEND_0"] = "Epoch"
-    adc1.attrs["LABLAXIS"] = "Bin Index"
-    adc1.attrs["UNITS"] = ""
-
-    adc2 = cdf.new("Bins_CH2", type=pycdf.const.CDF_UINT1, recVary=True)
-    adc2[...] = range(0, nbin + 2, 1)
-    adc2.attrs["VAR_TYPE"] = "support_data"
-    adc2.attrs["FIELDNAM"] = "Bin Index"
-    adc2.attrs["DEPEND_0"] = "Epoch"
-    adc2.attrs["LABLAXIS"] = "Bin Index"
-    adc2.attrs["UNITS"] = ""
-
-    # add the image data, which references the pixel and energy variables
-    # bins = cdf.new("Bins", type=pycdf.const.CDF_BYTE, recVary=True)
-    cdf["Bins1"] = fields["bins"][:, 0 : nbin + 2]
-    cdf["Bins1"].attrs["VAR_TYPE"] = "data"
-    cdf["Bins1"].attrs["FIELDNAM"] = "Per-bin accumulated ADC value"
-    cdf["Bins1"].attrs["CATDESC"] = (
-        "Per-bin accumulated ADC value for nbin bins (and an under and overflow bin), each 16 bits deep."
-    )
-    # note: this is a 1D list of pixels at each timestep, not yet a 2D image.
-    cdf["Bins1"].attrs["UNITS"] = ""
-    cdf["Bins1"].attrs["DEPEND_0"] = "Epoch"
-    cdf["Bins1"].attrs["DEPEND_1"] = "Bins_CH1"
-    # bins.attrs["DEPEND_2"] = "ADC"
-
-    cdf["Bins1"].attrs["LABLAXIS"] = "ADC Count"
-
-    cdf["Bins1"].attrs["DICT_KEY"] = "SPASE>Huh"
-    # cdf["Bins"].attrs["DISPLAY_TYPE"] = (
-    #     "spectrogram>y=energy,z=Bins(*,1),z=Bins(*,7),z=Bins(*,12)"
-    # )
-
-    cdf["Bins1"].attrs["AVG_TYPE"] = "standard"
-    cdf["Bins1"].attrs["SCALETYP"] = "linear"
-
-    cdf["Bins2"] = fields["bins"][:, nbin + 2 : :]
-    cdf["Bins2"].attrs["VAR_TYPE"] = "data"
-    cdf["Bins2"].attrs["FIELDNAM"] = "Per-bin accumulated ADC value"
-    cdf["Bins2"].attrs["CATDESC"] = (
-        "Per-bin accumulated ADC value for nbin bins (and an under and overflow bin), each 16 bits deep."
-    )
-    # note: this is a 1D list of pixels at each timestep, not yet a 2D image.
-    cdf["Bins2"].attrs["UNITS"] = ""
-    cdf["Bins2"].attrs["DEPEND_0"] = "Epoch"
-    cdf["Bins2"].attrs["DEPEND_1"] = "Bins_CH2"
-    # bins.attrs["DEPEND_2"] = "ADC"
-
-    cdf["Bins2"].attrs["LABLAXIS"] = "ADC Count"
-
-    cdf["Bins2"].attrs["DICT_KEY"] = "SPASE>Huh"
-    # cdf["Bins"].attrs["DISPLAY_TYPE"] = (
-    #     "spectrogram>y=energy,z=Bins(*,1),z=Bins(*,7),z=Bins(*,12)"
-    # )
-
-    cdf["Bins2"].attrs["AVG_TYPE"] = "standard"
-    cdf["Bins2"].attrs["SCALETYP"] = "linear"
+    cdf["CCSDS_SEQ"][...] = fields["CCSDS_SEQUENCE_COUNT"]
+    cdf["CCSDS_LENGTH"][...] = fields["CCSDS_PACKET_LENGTH"]
+    cdf["FAULT"][...] = fields["FAULT"]
+    cdf["CFLAG"][...] = fields["CFLAG"]
+    cdf["NACC"][...] = fields["NACC"]
+    cdf["SEU_RAW"][...] = fields["SEU_RAW"]
+    cdf["AUTO"][...] = fields["AUTO_RAW"]
+    cdf["V5B_RAW"][...] = fields["V5B_RAW"]
+    cdf["HVI_RAW"][...] = fields["HVI_RAW"]
+    cdf["DET_TEMP_RAW"][...] = fields["DET_TEMP_RAW"]
+    cdf["CPU_TEMP_RAW"][...] = fields["CPU_TEMP_RAW"]
+    cdf["3V3_RAW"][...] = fields["3V3_RAW"]
+    cdf["SPARE_23"][...] = fields["SPARE_23"]
+    cdf["CAL1_RAW"][...] = fields["CAL1_RAW"]
+    cdf["CAL2_RAW"][...] = fields["CAL2_RAW"]
+    cdf["CMD"][...] = fields["CMD"]
+    cdf["TSET_RAW"][...] = fields["TSET_RAW"]
+    cdf["TOT1_RAW"][...] = fields["TOT1_RAW"]
+    cdf["TOT2_RAW"][...] = fields["TOT2_RAW"]
+    cdf["CLOCK"][...] = fields["CLOCK"]
+    cdf["SEQ"][...] = fields["SEQ"]
 
     return cdf
 
