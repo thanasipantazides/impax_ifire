@@ -1,5 +1,5 @@
 ! Skeleton table for the "impax_ifire_skeleton.cdf" CDF.
-! Generated: Thursday, 15-Oct-2026 03:56:59
+! Generated: Thursday, 15-Oct-2026 15:34:16
 ! CDF created/modified by CDF V3.9.2
 ! Skeleton table created by CDF V3.9.2_0
 
@@ -193,7 +193,21 @@
     "DICT_KEY"    CDF_CHAR     { "SPASE>Support>SupportQuantity:Temporal" }
     "DISPLAY_TYPE"
                   CDF_CHAR     { "Time Series" }
-    "DEPEND_0"    CDF_CHAR     { "Epoch" } .
+    "DEPEND_0"    CDF_CHAR     { "Epoch" }
+    "VAR_NOTES"   CDF_CHAR     { "The ADC bin count for CH1 is " -
+                                 "dynamically configurable. The current " -
+                                 "bin count is the NBIN global attribute" -
+                                 " value, plus an overflow bin, plus an " -
+                                 "underflow bin (NBIN + 2 total for " -
+                                 "CH1).  The L0 CDF files shall be " -
+                                 "generated from telemetry such that " -
+                                 "NBIN is constant within a single CDF " -
+                                 "file.   The maximum allowed value of " -
+                                 "NBIN is 128, and the minimum allowed " -
+                                 "value of NBIN is 4.   When NBIN is " -
+                                 "less than 128, unused (placeholder) " -
+                                 "bins in BINS_CH1_RAW are filled with " -
+                                 "the FILLVAL." } .
 
   ! RV values were not requested.
 
@@ -225,7 +239,21 @@
     "DICT_KEY"    CDF_CHAR     { "SPASE>Support>SupportQuantity:Temporal" }
     "DISPLAY_TYPE"
                   CDF_CHAR     { "Time Series" }
-    "DEPEND_0"    CDF_CHAR     { "Epoch" } .
+    "DEPEND_0"    CDF_CHAR     { "Epoch" }
+    "VAR_NOTES"   CDF_CHAR     { "The ADC bin count for CH2 is " -
+                                 "dynamically configurable. The current " -
+                                 "bin count is the NBIN global attribute" -
+                                 " value, plus an overflow bin, plus an " -
+                                 "underflow bin (NBIN + 2 total for " -
+                                 "CH2).  The L0 CDF files shall be " -
+                                 "generated from telemetry such that " -
+                                 "NBIN is constant within a single CDF " -
+                                 "file.   The maximum allowed value of " -
+                                 "NBIN is 128, and the minimum allowed " -
+                                 "value of NBIN is 4.   When NBIN is " -
+                                 "less than 128, unused (placeholder) " -
+                                 "bins in BINS_CH2_RAW are filled with " -
+                                 "the FILLVAL." } .
 
   ! RV values were not requested.
 

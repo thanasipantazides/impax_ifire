@@ -19,6 +19,8 @@ demux_file_path = os.path.join(
     os.path.dirname(__file__), "..", "data", "ifire-hk-demux-rules.csv"
 )
 
+l0_depot = os.path.join(os.path.dirname(__file__), "..", "data", "log")
+
 
 class FireParams(Enum):
     NBIN_MIN = 4
@@ -71,14 +73,11 @@ def accum(k: int, buff: bytes):
     return 0xFF & buff[k + 7]
 
 
-def nbin(k: int, buff: bytes, last_nbin: int = 0):
+def nbin(k: int, buff: bytes):
     nbin = 0xFF & buff[k + 8]
 
     if nbin < 4 or nbin > 128:
         raise ValueError(f"FIRE {nbin=} out of valid range 4-128.")
-
-    if last_nbin != 0 and nbin != last_nbin:
-        raise IFireNBinChangedError(k)
 
     return nbin
 
@@ -134,14 +133,18 @@ def bins(k: int, buff: bytes, pflags: int, nbin: int):
     # fill up the bins with NaNs for any channel which is not enabled.
     #   todo: consider using a uint16 for this. Which does not support NaN. So a sentinel missing value would be needed.
 
-    bins_ch1 = np.empty(FireParams.TOTAL_BINS.value, dtype=np.uint16)
-    bins_ch1.fill(FireParams.FILLVAL.value)
+    bins_ch1 = np.full(
+        FireParams.TOTAL_BINS.value, FireParams.FILLVAL.value, dtype=np.uint16
+    )
     bins_ch2 = bins_ch1
+
+    bound_ch1 = 24 + nbytes
+    bound_ch2 = 24 + 2 * nbytes if enach1 else bound_ch1
 
     kbin = 24
     kout = 0
     if enach1:
-        while kbin < 24 + nbytes:
+        while kbin < bound_ch1:
             binval = int.from_bytes(
                 buff[k + kbin : k + kbin + 2], byteorder="little", signed=False
             )
@@ -152,7 +155,7 @@ def bins(k: int, buff: bytes, pflags: int, nbin: int):
     kout = 0
 
     if enach2:
-        while kbin < 24 + 2 * nbytes:
+        while kbin < bound_ch2:
             binval = int.from_bytes(
                 buff[k + kbin : k + kbin + 2], byteorder="little", signed=False
             )
@@ -214,7 +217,10 @@ def parse_fire(file: str, start_offset: int = 0):
         this_accum = accum(k, buff)
 
         # note: if this raises, the caller of parse_fire should handle.
-        this_nbin = nbin(k, buff, last_nbin=last_nbin)
+        this_nbin = nbin(k, buff)
+        if last_nbin != 0 and this_nbin != last_nbin:
+            raise IFireNBinChangedError(k, {name: res[name] for name in ptype.names})
+        last_nbin = this_nbin
 
         this_mux = mux(k, buff)
         this_hk = hk(k, buff, this_mux)
@@ -252,12 +258,10 @@ def parse_fire(file: str, start_offset: int = 0):
 
         res = np.append(res, np.array(thisp, dtype=ptype))
 
-        # update state
-        last_nbin = this_nbin
         k += 6 + L + 1
 
     # turn this into a dict, CCSDSPy wannabe
-    d = {k: res[k] for k in ptype.names}
+    d = {name: res[name] for name in ptype.names}
     return d
 
 
@@ -278,16 +282,12 @@ def promote(base: str):
         raise ValueError
 
 
-def str2dtype(s: str):
-    if s == "uint8":
-        return np.uint8
-
-
-def demux_hk(p: dict, rules: str = demux_file_path):
+def demux_hk(p, rules: str = demux_file_path):
 
     with open(rules, "r") as f:
         reader = csv.DictReader(f)
         mux_map = {}
+        # make a dict of the demux data, keyed by HK name:
         for row in reader:
             mux_map[row["HK"]] = {
                 "MUX": int(row["MUX"]),
@@ -301,7 +301,10 @@ def demux_hk(p: dict, rules: str = demux_file_path):
             }
 
     for key, val in mux_map.items():
+        # don't handle the static items here.
+        # todo: maybe do handle them here actually, raise if they change, etc.
         if val["Static"]:
+            # something something len(set(...))
             continue
 
         if val["Promote"]:
@@ -309,20 +312,33 @@ def demux_hk(p: dict, rules: str = demux_file_path):
         else:
             this_type = np.dtype(val["Type"])
 
+        # maximum value of the base type of this field, use as bitmask
         mask = np.iinfo(val["Type"]).max
+        # maximum value of the promoted type of this field.
+        #   ASSUMED to be equal to CDF FILLVAL.
         typemax = np.iinfo(this_type).max
+        # an array full of typemaxes.
         res = np.full(len(p["hk"]), typemax, dtype=this_type)
+
         # little endian: >> for LSB and mask for MSB.
-        if val["Side"] == "LSB":
+        # WAIT. These have already been converted and should now be *big* endian.
+        # So >> for MSB and mask for LSB.
+        if val["Side"] == "MSB":
             shift = 8
         else:
             shift = 0
 
+        # for the indices where this HK is selected by the mux,
+        #   1. cast to correct type
+        #   2. do any shifting and masking needed
         res[p["mux"] == val["MUX"]] = (
             (p["hk"][p["mux"] == val["MUX"]]).astype(this_type) >> shift
         ) & mask
 
         name = val["HK"]
+        if name not in p:
+            continue
+
         if val["Raw"]:
             name += "_RAW"
         p[name] = res
@@ -341,21 +357,41 @@ def read_file(data_filename):
 
     Returns
     -------
-    data: str
+    data: list[str]
+        A list of paths to CDF files created from raw telemetry data.
+
+    Raises
+    ------
+    IFireNBinChangedError
 
     Examples
     --------
     """
-    return
+
+    all_cdfs = []
+    inc = 0
+    start_offset = 0
+    still_workin = True
+    while still_workin:
+        try:
+            p = parse_fire(data_filename, start_offset)
+            p = demux_hk(p)
+            cdf = cdf_from_500(p, l0_depot, increment=inc)
+            all_cdfs.append(cdf.pathname)
+            # if we make it down here, file is done cooking.
+            still_workin = False
+        except IFireNBinChangedError as e:
+            start_offset = e.args[0]
+            # print(f"splitting telemetry file at offset: {start_offset:#x}")
+            partial = e.args[1]
+            p = demux_hk(partial)
+            cdf = cdf_from_500(p, l0_depot, increment=inc)
+            all_cdfs.append(cdf.pathname)
+            inc += 1
+            continue
+
+    return all_cdfs
 
 
 if __name__ == "__main__":
-    p = parse_fire(sys.argv[1])
-
-    p = demux_hk(p)
-
-    [print(k) for k in p]
-    # print(p.keys())
-    cdf = cdf_from_500(
-        p, sys.argv[1], os.path.join(os.path.dirname(__file__), "..", "data", "log")
-    )
+    path_cdf = read_file(sys.argv[1])

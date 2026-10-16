@@ -109,15 +109,12 @@ def cdf_make_epoch(fields, cdf):
 
 
 def cdf_from_500(
-    fields,
-    src_file: str,
-    save_path: str,
-    skeleton_path=fire_l0_skeleton_path,
+    fields, save_path: str, skeleton_path=fire_l0_skeleton_path, increment=0
 ):
     logical_source = "impax_ifire_l0"
     data_version = "0"
     datestr = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")
-    fname = f"{logical_source}_{datestr}_L{data_version}"
+    fname = f"{logical_source}_{datestr}_L{data_version}_{increment}"
     fpath = os.path.join(save_path, fname + ".cdf")
 
     cdf = pycdf.CDF(fpath, skeleton_path)
@@ -131,25 +128,30 @@ def cdf_from_500(
 
     cdf["CCSDS_SEQ"][...] = fields["CCSDS_SEQUENCE_COUNT"]
     cdf["CCSDS_LENGTH"][...] = fields["CCSDS_PACKET_LENGTH"]
-    cdf["FAULT"][...] = fields["FAULT"]
-    cdf["CFLAG"][...] = fields["CFLAG"]
-    cdf["NACC"][...] = fields["NACC"]
-    cdf["SEU_RAW"][...] = fields["SEU_RAW"]
-    cdf["AUTO"][...] = fields["AUTO_RAW"]
-    cdf["V5B_RAW"][...] = fields["V5B_RAW"]
-    cdf["HVI_RAW"][...] = fields["HVI_RAW"]
-    cdf["DET_TEMP_RAW"][...] = fields["DET_TEMP_RAW"]
-    cdf["CPU_TEMP_RAW"][...] = fields["CPU_TEMP_RAW"]
-    cdf["3V3_RAW"][...] = fields["3V3_RAW"]
-    cdf["SPARE_23"][...] = fields["SPARE_23"]
-    cdf["CAL1_RAW"][...] = fields["CAL1_RAW"]
-    cdf["CAL2_RAW"][...] = fields["CAL2_RAW"]
-    cdf["CMD"][...] = fields["CMD"]
-    cdf["TSET_RAW"][...] = fields["TSET_RAW"]
-    cdf["TOT1_RAW"][...] = fields["TOT1_RAW"]
-    cdf["TOT2_RAW"][...] = fields["TOT2_RAW"]
-    cdf["CLOCK"][...] = fields["CLOCK"]
-    cdf["SEQ"][...] = fields["SEQ"]
+    hk_vars = [
+        "FAULT",
+        "CFLAG",
+        "NACC",
+        "SEU_RAW",
+        "AUTO",
+        "V5B_RAW",
+        "HVI_RAW",
+        "DET_TEMP_RAW",
+        "CPU_TEMP_RAW",
+        "3V3_RAW",
+        "SPARE_23",
+        "CAL1_RAW",
+        "CAL2_RAW",
+        "CMD",
+        "TSET_RAW",
+        "TOT1_RAW",
+        "TOT2_RAW",
+        "CLOCK",
+        "SEQ",
+    ]
+    for key in hk_vars:
+        if key in fields:
+            cdf[key][...] = fields[key]
 
     return cdf
 
@@ -159,7 +161,7 @@ def cdf_from_apid(
     apid: int,
     packet: dict,
     src_file: str,
-    save_path: str = os.path.join(os.path.dirname(__file__), "..", "data", "log"),
+    save_path: str,
 ):
     # if apid != packet["CCSDS_APID"]:
     #     raise ValueError
