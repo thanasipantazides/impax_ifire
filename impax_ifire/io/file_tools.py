@@ -22,12 +22,28 @@ demux_file_path = os.path.join(
 l0_depot = os.path.join(os.path.dirname(__file__), "..", "data", "log")
 
 
+def sparky(arr, end="\n"):
+    tm = np.iinfo(arr.ravel()[0]).max
+    map = {0: ".", 1: "o", tm: "F", tm - 1: "f"}
+    if len(arr.shape) == 1:
+        for k in arr:
+            print(map.get(k, "O"), end=end)
+    if len(arr.shape) == 2:
+        if arr.shape[0] < arr.shape[1]:
+            arr = arr.T
+        for r in arr:
+            line = "".join([map.get(c, "O") for c in r])
+            print(line, end=end)
+
+
 class FireParams(Enum):
     NBIN_MIN = 4
     NBIN_MAX = 128
     TOTAL_BINS = 130
+    # total number of HK MUX elements. Fields that share a uint16 are only counted once.
+    TOTAL_MUX = 32
     VALID_APID = 0x500
-    # BIN_PAD = 0xFFFF
+    # BIN_PAD = 0xFFFF - 1
     FILLVAL = 0xFFFF
 
 
@@ -184,18 +200,18 @@ def parse_fire(file: str, start_offset: int = 0):
             ("CCSDS_SEQUENCE_FLAG", np.uint8),
             ("CCSDS_SEQUENCE_COUNT", np.uint16),
             ("CCSDS_PACKET_LENGTH", np.uint16),
-            ("pflags", np.uint8),
-            ("accum", np.uint8),
-            ("nbin", np.uint8),
-            ("mux", np.uint8),
-            ("hk", np.uint16),
-            ("ttag", np.uint32),
-            ("base1", np.uint16),
-            ("base2", np.uint16),
-            ("rate1", np.uint16),
-            ("rate2", np.uint16),
-            ("bins_ch1", np.uint16, FireParams.TOTAL_BINS.value),
-            ("bins_ch2", np.uint16, FireParams.TOTAL_BINS.value),
+            ("PFLAGS", np.uint8),
+            ("ACCUM", np.uint8),
+            ("NBIN", np.uint8),
+            ("MUX", np.uint8),
+            ("HK", np.uint16),
+            ("TTAG", np.uint32),
+            ("BASE1", np.uint16),
+            ("BASE2", np.uint16),
+            ("RATE1", np.uint16),
+            ("RATE2", np.uint16),
+            ("BINS_CH1", np.uint16, FireParams.TOTAL_BINS.value),
+            ("BINS_CH2", np.uint16, FireParams.TOTAL_BINS.value),
         ]
     )
     res = np.empty(0, dtype=ptype)
@@ -219,11 +235,15 @@ def parse_fire(file: str, start_offset: int = 0):
         # note: if this raises, the caller of parse_fire should handle.
         this_nbin = nbin(k, buff)
         if last_nbin != 0 and this_nbin != last_nbin:
-            raise IFireNBinChangedError(k, {name: res[name] for name in ptype.names})
+            print("ok, bin size changed. I accept this.")
+            # raise IFireNBinChangedError(k, {name: res[name] for name in ptype.names})
         last_nbin = this_nbin
 
         this_mux = mux(k, buff)
         this_hk = hk(k, buff, this_mux)
+
+        if this_mux == 1 and this_nbin != 0xFF & (this_hk >> 8):
+            raise ValueError
 
         this_ttag = ttag(k, buff)
         this_base1 = base1(k, buff)
@@ -282,6 +302,60 @@ def promote(base: str):
         raise ValueError
 
 
+def first_after(arr, k, ignore=0):
+    for i, v in enumerate(arr):
+        if i >= k and v != ignore:
+            return v
+    return None
+
+
+def first_before(arr, k, ignore=0):
+    for i, v in enumerate(arr):
+        if i < k and v != ignore:
+            return v
+    return None
+
+
+def align_command_hk(p, commandables: list[str], fills: dict):
+    # find all indices where any commandable value has changed:
+    last_values = {}
+    change_indices = []
+    # over time/packets:
+    for k in range(len(p["CCSDS_VERSION_NUMBER"])):
+        # over fields:
+        for c in commandables:
+            # this field at this time
+            v = p[c][k]
+            # changed if it's not filler, and if not equal to the last one:
+            if v != fills[c]:
+                if v != last_values.get(c, None):
+                    change_indices.append(k)
+                last_values[c] = v
+
+    # filter out the indices that are not leading a change.
+    front_indices = [0]
+    for v, vnext in zip(change_indices, change_indices[1:]):
+        if FireParams.TOTAL_MUX.value < vnext - v:
+            front_indices.append(vnext)
+
+    aligns = {k: {} for k in front_indices}
+    for k in front_indices:
+        for c in commandables:
+            nextval = first_after(p[c], k, ignore=fills[c])
+            if nextval is not None:
+                aligns[k][c] = nextval
+            else:  # look backwards too, in case this field wasn't commanded during this change.
+                prevval = first_before(p[c], k, ignore=fills[c])
+                aligns[k][c] = prevval
+
+    # populate the changes into p
+    for k in front_indices:
+        for c in commandables:
+            p[c][k::].fill(aligns[k][c])
+
+    return p
+
+
 def demux_hk(p, rules: str = demux_file_path):
 
     with open(rules, "r") as f:
@@ -296,16 +370,17 @@ def demux_hk(p, rules: str = demux_file_path):
                 "Type": row["Type"],
                 "Raw": int(row["Raw"]),
                 "Promote": int(row["Promote"]),
-                "Static": int(row["Static"]),
+                "Command": int(row["Command"]),
                 "Description": row["Description"],
             }
 
+    fills = {}
     for key, val in mux_map.items():
         # don't handle the static items here.
         # todo: maybe do handle them here actually, raise if they change, etc.
-        if val["Static"]:
-            # something something len(set(...))
-            continue
+        # if val["Command"]:
+        #     # something something len(set(...))
+        #     continue
 
         if val["Promote"]:
             this_type = np.dtype(promote(val["Type"]))
@@ -318,12 +393,10 @@ def demux_hk(p, rules: str = demux_file_path):
         #   ASSUMED to be equal to CDF FILLVAL.
         typemax = np.iinfo(this_type).max
         # an array full of typemaxes.
-        res = np.full(len(p["hk"]), typemax, dtype=this_type)
+        res = np.full(len(p["HK"]), typemax, dtype=this_type)
 
         # little endian: >> for LSB and mask for MSB.
-        # WAIT. These have already been converted and should now be *big* endian.
-        # So >> for MSB and mask for LSB.
-        if val["Side"] == "MSB":
+        if val["Side"] == "LSB":
             shift = 8
         else:
             shift = 0
@@ -331,17 +404,30 @@ def demux_hk(p, rules: str = demux_file_path):
         # for the indices where this HK is selected by the mux,
         #   1. cast to correct type
         #   2. do any shifting and masking needed
-        res[p["mux"] == val["MUX"]] = (
-            (p["hk"][p["mux"] == val["MUX"]]).astype(this_type) >> shift
+        res[p["MUX"] == val["MUX"]] = (
+            (p["HK"][p["MUX"] == val["MUX"]]) >> shift
         ) & mask
 
         name = val["HK"]
-        if name not in p:
-            continue
+
+        # print(f"{name}: {shift=}, {mask=}")
 
         if val["Raw"]:
             name += "_RAW"
+
         p[name] = res
+        fills[name] = typemax
+
+    # now, align all command fields to the first command field that changed
+    commandables = []
+    for k in mux_map:
+        if mux_map[k]["Command"]:
+            if mux_map[k]["Raw"]:
+                commandables.append(k + "_RAW")
+            else:
+                commandables.append(k)
+
+    p = align_command_hk(p, commandables, fills)
 
     return p
 
@@ -368,6 +454,13 @@ def read_file(data_filename):
     --------
     """
 
+    p = parse_fire(data_filename)
+    p = demux_hk(p)
+    cdf = cdf_from_500(p, l0_depot)
+
+    return cdf
+
+    # below: tearing off new files whenever nbin changes:
     all_cdfs = []
     inc = 0
     start_offset = 0
@@ -380,6 +473,7 @@ def read_file(data_filename):
             all_cdfs.append(cdf.pathname)
             # if we make it down here, file is done cooking.
             still_workin = False
+            print("done and normal.")
         except IFireNBinChangedError as e:
             start_offset = e.args[0]
             # print(f"splitting telemetry file at offset: {start_offset:#x}")

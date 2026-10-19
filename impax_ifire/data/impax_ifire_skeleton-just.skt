@@ -1,18 +1,18 @@
-! Skeleton table for the "impax_ifire_skeleton.cdf" CDF.
-! Generated: Thursday, 15-Oct-2026 15:34:16
+! Skeleton table for the "impax_ifire_skeleton-L0.cdf" CDF.
+! Generated: Friday, 16-Oct-2026 15:42:26
 ! CDF created/modified by CDF V3.9.2
 ! Skeleton table created by CDF V3.9.2_0
 
 #header
 
-                       CDF NAME: impax_ifire_skeleton.cdf
+                       CDF NAME: impax_ifire_skeleton-L0.cdf
                   DATA ENCODING: IBMPC
                        MAJORITY: COLUMN
                          FORMAT: SINGLE
 
 ! Variables  G.Attributes  V.Attributes  Records  Dims  Sizes
 ! ---------  ------------  ------------  -------  ----  -----
-    0/30          30            17         0/z      0
+    0/47          15            18         0/z      0
 ! CDF_COMPRESSION: None
 ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
 ! CDF_CHECKSUM: MD5
@@ -57,7 +57,8 @@
 
   "Logical_source"      1:    CDF_CHAR     { "impax_ifire_l0-hk" } .
 
-  "Logical_file_id"     1:    CDF_CHAR     { " " } .
+  "Logical_file_id"     1:    CDF_CHAR     { "impax_ifire_l0-raw_0000000" -
+                                             "0_v00" } .
 
   "Logical_source_description"
                         1:    CDF_CHAR     { "IMPAX IFIRE level 0 HK" } .
@@ -65,39 +66,11 @@
   "TEXT"                1:    CDF_CHAR     { "Raw IFIRE HK telemetry " -
                                              "fields decoded" } .
 
-  "SHIFT"               1:    CDF_UINT1    { 0 } .
-
-  "GAIN1"               1:    CDF_UINT1    { 0 } .
-
-  "GAIN2"               1:    CDF_UINT1    { 0 } .
-
-  "OFF1"                1:    CDF_UINT2    { 0 } .
-
-  "OFF2"                1:    CDF_UINT2    { 0 } .
-
-  "CF1"                 1:    CDF_UINT2    { 0 } .
-
-  "CF2"                 1:    CDF_UINT2    { 0 } .
-
-  "TH1"                 1:    CDF_UINT2    { 0 } .
-
-  "TH2"                 1:    CDF_UINT2    { 0 } .
-
-  "EDGE1"               1:    CDF_UINT2    { 0 } .
-
-  "NBIN"                1:    CDF_UINT1    { 0 } .
-
-  "APID"                1:    CDF_UINT2    { 1280 } .
-
-  "EDGE2"               1:    CDF_UINT2    { 0 } .
-
-  "EDGE3"               1:    CDF_UINT2    { 0 } .
-
-  "EDGE4"               1:    CDF_UINT2    { 0 } .
-
-  "EDGE5"               1:    CDF_UINT2    { 0 } .
-
   "Generated_by"        1:    CDF_CHAR     { "University of Minnesota" } .
+
+  "Discipline"          1:    CDF_CHAR     { "Space " -
+                                             "Physics>Magnetospheric " -
+                                             "Science" } .
 
 
 #VARIABLEattributes
@@ -119,6 +92,7 @@
   "DISPLAY_TYPE"
   "DEPEND_0"
   "VAR_NOTES"
+  "DEPEND_1"
 
 
 #variables
@@ -186,13 +160,16 @@
     "CATDESC"     CDF_CHAR     { "Raw ADC values from CH1 detector" }
     "FIELDNAM"    CDF_CHAR     { "CH1 ADC bins" }
     "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I5" }
     "SCALETYP"    CDF_CHAR     { "linear" }
-    "VALIDMIN"    CDF_UINT2    { 65535 }
-    "VALIDMAX"    CDF_UINT2    { 65535 }
+    "VALIDMIN"    CDF_UINT2    { 0 }
+    "VALIDMAX"    CDF_UINT2    { 65533 }
     "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "CH1 ADC" }
     "DICT_KEY"    CDF_CHAR     { "SPASE>Support>SupportQuantity:Temporal" }
     "DISPLAY_TYPE"
-                  CDF_CHAR     { "Time Series" }
+                  CDF_CHAR     { "spectrogram" }
     "DEPEND_0"    CDF_CHAR     { "Epoch" }
     "VAR_NOTES"   CDF_CHAR     { "The ADC bin count for CH1 is " -
                                  "dynamically configurable. The current " -
@@ -207,7 +184,8 @@
                                  "value of NBIN is 4.   When NBIN is " -
                                  "less than 128, unused (placeholder) " -
                                  "bins in BINS_CH1_RAW are filled with " -
-                                 "the FILLVAL." } .
+                                 "the FILLVAL." }
+    "DEPEND_1"    CDF_CHAR     { "BINS_INDEX" } .
 
   ! RV values were not requested.
 
@@ -232,13 +210,16 @@
     "CATDESC"     CDF_CHAR     { "Raw ADC values from CH2 detector" }
     "FIELDNAM"    CDF_CHAR     { "CH2 ADC bins" }
     "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I5" }
     "SCALETYP"    CDF_CHAR     { "linear" }
-    "VALIDMIN"    CDF_UINT2    { 65535 }
-    "VALIDMAX"    CDF_UINT2    { 65535 }
+    "VALIDMIN"    CDF_UINT2    { 0 }
+    "VALIDMAX"    CDF_UINT2    { 65533 }
     "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "CH2 ADC" }
     "DICT_KEY"    CDF_CHAR     { "SPASE>Support>SupportQuantity:Temporal" }
     "DISPLAY_TYPE"
-                  CDF_CHAR     { "Time Series" }
+                  CDF_CHAR     { "spectrogram" }
     "DEPEND_0"    CDF_CHAR     { "Epoch" }
     "VAR_NOTES"   CDF_CHAR     { "The ADC bin count for CH2 is " -
                                  "dynamically configurable. The current " -
@@ -253,7 +234,41 @@
                                  "value of NBIN is 4.   When NBIN is " -
                                  "less than 128, unused (placeholder) " -
                                  "bins in BINS_CH2_RAW are filled with " -
-                                 "the FILLVAL." } .
+                                 "the FILLVAL." }
+    "DEPEND_1"    CDF_CHAR     { "BINS_INDEX" } .
+
+  ! RV values were not requested.
+
+
+! Variable          Data      Number                 Record   Dimension
+! Name              Type     Elements  Dims  Sizes  Variance  Variances
+! --------          ----     --------  ----  -----  --------  ---------
+
+  "BINS_INDEX"    CDF_UINT1      1       0              T
+
+  ! VAR_COMPRESSION: GZIP.6
+  ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
+  ! VAR_SPARSERECORDS: sRecords.PAD
+  ! (Valid sparserecords: None, sRecords.PAD, sRecords.PREV)
+  ! VAR_PADVALUE: 254
+
+  ! Attribute       Data
+  ! Name            Type       Value
+  ! --------        ----       -----
+
+    "CATDESC"     CDF_CHAR     { "Index value for energy bins (raw, ADC " -
+                                 "values)" }
+    "FIELDNAM"    CDF_CHAR     { "Index for energy bins" }
+    "FILLVAL"     CDF_UINT1    { 255 }
+    "FORMAT"      CDF_CHAR     { "I3" }
+    "SCALETYP"    CDF_CHAR     { "linear" }
+    "VALIDMIN"    CDF_UINT1    { 0 }
+    "VALIDMAX"    CDF_UINT1    { 130 }
+    "VAR_TYPE"    CDF_CHAR     { "support_data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "DISPLAY_TYPE"
+                  CDF_CHAR     { "Time Series" }
+    "DEPEND_0"    CDF_CHAR     { "Epoch" } .
 
   ! RV values were not requested.
 
@@ -277,13 +292,16 @@
     "CATDESC"     CDF_CHAR     { "Sequence counter from CCSDS header" }
     "FIELDNAM"    CDF_CHAR     { "CCSDS sequence" }
     "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I5" }
     "SCALETYP"    CDF_CHAR     { "linear" }
-    "VALIDMIN"    CDF_UINT2    { 65535 }
+    "VALIDMIN"    CDF_UINT2    { 0 }
     "VALIDMAX"    CDF_UINT2    { 65535 }
     "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "CCSDS sequence" }
     "DICT_KEY"    CDF_CHAR     { "SPASE>Support>SupportQuantity:Telemetry" }
     "DISPLAY_TYPE"
-                  CDF_CHAR     { "Time Series" }
+                  CDF_CHAR     { "time_series" }
     "DEPEND_0"    CDF_CHAR     { "Epoch" } .
 
   ! RV values were not requested.
@@ -309,12 +327,15 @@
     "CATDESC"     CDF_CHAR     { "Length of CCSDS packet from header" }
     "FIELDNAM"    CDF_CHAR     { "CCSDS length" }
     "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I5" }
     "SCALETYP"    CDF_CHAR     { "linear" }
-    "VALIDMIN"    CDF_UINT2    { 65535 }
+    "VALIDMIN"    CDF_UINT2    { 1 }
     "VALIDMAX"    CDF_UINT2    { 65535 }
     "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "CCSDS length" }
     "DISPLAY_TYPE"
-                  CDF_CHAR     { "Time Series" }
+                  CDF_CHAR     { "time_series" }
     "DEPEND_0"    CDF_CHAR     { "Epoch" } .
 
   ! RV values were not requested.
@@ -339,13 +360,16 @@
     "CATDESC"     CDF_CHAR     { "Flag bits for FIRE packet" }
     "FIELDNAM"    CDF_CHAR     { "Packet flags" }
     "FILLVAL"     CDF_UINT1    { 255 }
+    "FORMAT"      CDF_CHAR     { "I3" }
     "SCALETYP"    CDF_CHAR     { "linear" }
-    "VALIDMIN"    CDF_UINT1    { 255 }
+    "VALIDMIN"    CDF_UINT1    { 0 }
     "VALIDMAX"    CDF_UINT1    { 255 }
     "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "Packet flags" }
     "DICT_KEY"    CDF_CHAR     { "SPASE>Support>SupportQuantity:Telemetry" }
     "DISPLAY_TYPE"
-                  CDF_CHAR     { "Time Series" }
+                  CDF_CHAR     { "time_series" }
     "DEPEND_0"    CDF_CHAR     { "Epoch" } .
 
   ! RV values were not requested.
@@ -371,12 +395,15 @@
                                  "packet" }
     "FIELDNAM"    CDF_CHAR     { "Accumulations" }
     "FILLVAL"     CDF_UINT1    { 255 }
+    "FORMAT"      CDF_CHAR     { "I5" }
     "SCALETYP"    CDF_CHAR     { "linear" }
-    "VALIDMIN"    CDF_UINT1    { 255 }
+    "VALIDMIN"    CDF_UINT1    { 0 }
     "VALIDMAX"    CDF_UINT1    { 255 }
     "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "Accumulations" }
     "DISPLAY_TYPE"
-                  CDF_CHAR     { "Time Series" }
+                  CDF_CHAR     { "time_series" }
     "DEPEND_0"    CDF_CHAR     { "Epoch" } .
 
   ! RV values were not requested.
@@ -401,12 +428,15 @@
     "CATDESC"     CDF_CHAR     { "CH1 digital baseline correction" }
     "FIELDNAM"    CDF_CHAR     { "CH1 baseline correction" }
     "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I5" }
     "SCALETYP"    CDF_CHAR     { "linear" }
-    "VALIDMIN"    CDF_UINT2    { 65535 }
+    "VALIDMIN"    CDF_UINT2    { 0 }
     "VALIDMAX"    CDF_UINT2    { 65535 }
     "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "Baseline 1" }
     "DISPLAY_TYPE"
-                  CDF_CHAR     { "Time Series" }
+                  CDF_CHAR     { "time_series" }
     "DEPEND_0"    CDF_CHAR     { "Epoch" } .
 
   ! RV values were not requested.
@@ -431,12 +461,15 @@
     "CATDESC"     CDF_CHAR     { "CH2 digital baseline correction" }
     "FIELDNAM"    CDF_CHAR     { "CH2 baseline correction" }
     "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I5" }
     "SCALETYP"    CDF_CHAR     { "linear" }
-    "VALIDMIN"    CDF_UINT2    { 65535 }
+    "VALIDMIN"    CDF_UINT2    { 0 }
     "VALIDMAX"    CDF_UINT2    { 65535 }
     "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "Baseline 2" }
     "DISPLAY_TYPE"
-                  CDF_CHAR     { "Time Series" }
+                  CDF_CHAR     { "time_series" }
     "DEPEND_0"    CDF_CHAR     { "Epoch" } .
 
   ! RV values were not requested.
@@ -458,14 +491,18 @@
   ! Name            Type       Value
   ! --------        ----       -----
 
+    "CATDESC"     CDF_CHAR     { "CH1 discriminator triggers" }
     "FIELDNAM"    CDF_CHAR     { "CH1 discriminator triggers" }
     "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I5" }
     "SCALETYP"    CDF_CHAR     { "linear" }
-    "VALIDMIN"    CDF_UINT2    { 65535 }
+    "VALIDMIN"    CDF_UINT2    { 0 }
     "VALIDMAX"    CDF_UINT2    { 65535 }
     "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "Triggers 1" }
     "DISPLAY_TYPE"
-                  CDF_CHAR     { "Time Series" }
+                  CDF_CHAR     { "time_series" }
     "DEPEND_0"    CDF_CHAR     { "Epoch" } .
 
   ! RV values were not requested.
@@ -487,14 +524,18 @@
   ! Name            Type       Value
   ! --------        ----       -----
 
+    "CATDESC"     CDF_CHAR     { "CH2 discriminator triggers" }
     "FIELDNAM"    CDF_CHAR     { "CH2 discriminator triggers" }
     "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I5" }
     "SCALETYP"    CDF_CHAR     { "linear" }
-    "VALIDMIN"    CDF_UINT2    { 65535 }
+    "VALIDMIN"    CDF_UINT2    { 0 }
     "VALIDMAX"    CDF_UINT2    { 65535 }
     "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "Triggers 2" }
     "DISPLAY_TYPE"
-                  CDF_CHAR     { "Time Series" }
+                  CDF_CHAR     { "time_series" }
     "DEPEND_0"    CDF_CHAR     { "Epoch" } .
 
   ! RV values were not requested.
@@ -516,77 +557,18 @@
   ! Name            Type       Value
   ! --------        ----       -----
 
+    "CATDESC"     CDF_CHAR     { "Fault status bits" }
     "FIELDNAM"    CDF_CHAR     { "Fault status bits" }
     "FILLVAL"     CDF_UINT4    { 4294967295 }
+    "FORMAT"      CDF_CHAR     { "I5" }
     "SCALETYP"    CDF_CHAR     { "linear" }
-    "VALIDMIN"    CDF_UINT4    { 4294967295 }
-    "VALIDMAX"    CDF_UINT4    { 4294967295 }
+    "VALIDMIN"    CDF_UINT4    { 0 }
+    "VALIDMAX"    CDF_UINT4    { 65535 }
     "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "Fault flags" }
     "DISPLAY_TYPE"
-                  CDF_CHAR     { "Time Series" }
-    "DEPEND_0"    CDF_CHAR     { "Epoch" } .
-
-  ! RV values were not requested.
-
-
-! Variable          Data      Number                 Record   Dimension
-! Name              Type     Elements  Dims  Sizes  Variance  Variances
-! --------          ----     --------  ----  -----  --------  ---------
-
-  "CFLAG"         CDF_UINT2      1       0              T
-
-  ! VAR_COMPRESSION: GZIP.6
-  ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
-  ! VAR_SPARSERECORDS: None
-  ! (Valid sparserecords: None, sRecords.PAD, sRecords.PREV)
-  ! VAR_PADVALUE: 65534
-
-  ! Attribute       Data
-  ! Name            Type       Value
-  ! --------        ----       -----
-
-    "CATDESC"     CDF_CHAR     { "Command flag bits" }
-    "FIELDNAM"    CDF_CHAR     { "Command flags" }
-    "FILLVAL"     CDF_UINT2    { 65535 }
-    "SCALETYP"    CDF_CHAR     { "linear" }
-    "VALIDMIN"    CDF_UINT2    { 65535 }
-    "VALIDMAX"    CDF_UINT2    { 65535 }
-    "VAR_TYPE"    CDF_CHAR     { "data" }
-    "DISPLAY_TYPE"
-                  CDF_CHAR     { "Time Series" }
-    "DEPEND_0"    CDF_CHAR     { "Epoch" }
-    "VAR_NOTES"   CDF_CHAR     { "Contains 8 bits worth of flags, but " -
-                                 "has been promoted to 16 bits for " -
-                                 "sparse padding." } .
-
-  ! RV values were not requested.
-
-
-! Variable          Data      Number                 Record   Dimension
-! Name              Type     Elements  Dims  Sizes  Variance  Variances
-! --------          ----     --------  ----  -----  --------  ---------
-
-  "NACC"          CDF_UINT2      1       0              T
-
-  ! VAR_COMPRESSION: GZIP.6
-  ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
-  ! VAR_SPARSERECORDS: sRecords.PAD
-  ! (Valid sparserecords: None, sRecords.PAD, sRecords.PREV)
-  ! VAR_PADVALUE: 65534
-
-  ! Attribute       Data
-  ! Name            Type       Value
-  ! --------        ----       -----
-
-    "CATDESC"     CDF_CHAR     { "Number of 50 ms accumulations" }
-    "FIELDNAM"    CDF_CHAR     { "Number of accumulations" }
-    "FILLVAL"     CDF_UINT2    { 65535 }
-    "SCALETYP"    CDF_CHAR     { "linear" }
-    "VALIDMIN"    CDF_UINT2    { 65535 }
-    "VALIDMAX"    CDF_UINT2    { 65535 }
-    "VAR_TYPE"    CDF_CHAR     { "data" }
-    "DISPLAY_TYPE"
-                  CDF_CHAR     { "Time Series" }
+                  CDF_CHAR     { "time_series" }
     "DEPEND_0"    CDF_CHAR     { "Epoch" } .
 
   ! RV values were not requested.
@@ -600,7 +582,7 @@
 
   ! VAR_COMPRESSION: GZIP.6
   ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
-  ! VAR_SPARSERECORDS: sRecords.PAD
+  ! VAR_SPARSERECORDS: sRecords.PREV
   ! (Valid sparserecords: None, sRecords.PAD, sRecords.PREV)
   ! VAR_PADVALUE: 65534
 
@@ -608,14 +590,18 @@
   ! Name            Type       Value
   ! --------        ----       -----
 
+    "CATDESC"     CDF_CHAR     { "SEU correction mask" }
     "FIELDNAM"    CDF_CHAR     { "SEU correction mask" }
     "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I5" }
     "SCALETYP"    CDF_CHAR     { "linear" }
-    "VALIDMIN"    CDF_UINT2    { 65535 }
+    "VALIDMIN"    CDF_UINT2    { 0 }
     "VALIDMAX"    CDF_UINT2    { 65535 }
     "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "SEU mask" }
     "DISPLAY_TYPE"
-                  CDF_CHAR     { "Time Series" }
+                  CDF_CHAR     { "time_series" }
     "DEPEND_0"    CDF_CHAR     { "Epoch" } .
 
   ! RV values were not requested.
@@ -629,7 +615,7 @@
 
   ! VAR_COMPRESSION: GZIP.6
   ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
-  ! VAR_SPARSERECORDS: sRecords.PAD
+  ! VAR_SPARSERECORDS: sRecords.PREV
   ! (Valid sparserecords: None, sRecords.PAD, sRecords.PREV)
   ! VAR_PADVALUE: 65534
 
@@ -637,14 +623,18 @@
   ! Name            Type       Value
   ! --------        ----       -----
 
+    "CATDESC"     CDF_CHAR     { "Auto accumulate rate limit" }
     "FIELDNAM"    CDF_CHAR     { "Auto accumulate rate limit" }
     "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I5" }
     "SCALETYP"    CDF_CHAR     { "linear" }
-    "VALIDMIN"    CDF_UINT2    { 65535 }
+    "VALIDMIN"    CDF_UINT2    { 0 }
     "VALIDMAX"    CDF_UINT2    { 65535 }
     "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "Accumulate rate" }
     "DISPLAY_TYPE"
-                  CDF_CHAR     { "Time Series" }
+                  CDF_CHAR     { "time_series" }
     "DEPEND_0"    CDF_CHAR     { "Epoch" } .
 
   ! RV values were not requested.
@@ -666,14 +656,18 @@
   ! Name            Type       Value
   ! --------        ----       -----
 
+    "CATDESC"     CDF_CHAR     { "5V supply monitor" }
     "FIELDNAM"    CDF_CHAR     { "5V supply monitor" }
     "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I5" }
     "SCALETYP"    CDF_CHAR     { "linear" }
-    "VALIDMIN"    CDF_UINT2    { 65535 }
+    "VALIDMIN"    CDF_UINT2    { 0 }
     "VALIDMAX"    CDF_UINT2    { 65535 }
     "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "5V bus" }
     "DISPLAY_TYPE"
-                  CDF_CHAR     { "Time Series" }
+                  CDF_CHAR     { "time_series" }
     "DEPEND_0"    CDF_CHAR     { "Epoch" } .
 
   ! RV values were not requested.
@@ -695,13 +689,18 @@
   ! Name            Type       Value
   ! --------        ----       -----
 
+    "CATDESC"     CDF_CHAR     { "High voltage current monitor" }
+    "FIELDNAM"    CDF_CHAR     { "High voltage current monitor" }
     "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I5" }
     "SCALETYP"    CDF_CHAR     { "linear" }
-    "VALIDMIN"    CDF_UINT2    { 65535 }
+    "VALIDMIN"    CDF_UINT2    { 0 }
     "VALIDMAX"    CDF_UINT2    { 65535 }
     "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "HV current" }
     "DISPLAY_TYPE"
-                  CDF_CHAR     { "Time Series" }
+                  CDF_CHAR     { "time_series" }
     "DEPEND_0"    CDF_CHAR     { "Epoch" } .
 
   ! RV values were not requested.
@@ -724,13 +723,18 @@
   ! Name            Type       Value
   ! --------        ----       -----
 
+    "CATDESC"     CDF_CHAR     { "Detector temperature" }
+    "FIELDNAM"    CDF_CHAR     { "Detector temperature" }
     "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I5" }
     "SCALETYP"    CDF_CHAR     { "linear" }
-    "VALIDMIN"    CDF_UINT2    { 65535 }
+    "VALIDMIN"    CDF_UINT2    { 0 }
     "VALIDMAX"    CDF_UINT2    { 65535 }
     "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "Detector temperature" }
     "DISPLAY_TYPE"
-                  CDF_CHAR     { "Time Series" }
+                  CDF_CHAR     { "time_series" }
     "DEPEND_0"    CDF_CHAR     { "Epoch" } .
 
   ! RV values were not requested.
@@ -753,13 +757,18 @@
   ! Name            Type       Value
   ! --------        ----       -----
 
+    "CATDESC"     CDF_CHAR     { "CPU temperature" }
+    "FIELDNAM"    CDF_CHAR     { "CPU temperature" }
     "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I5" }
     "SCALETYP"    CDF_CHAR     { "linear" }
-    "VALIDMIN"    CDF_UINT2    { 65535 }
+    "VALIDMIN"    CDF_UINT2    { 0 }
     "VALIDMAX"    CDF_UINT2    { 65535 }
     "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "CPU temperature" }
     "DISPLAY_TYPE"
-                  CDF_CHAR     { "Time Series" }
+                  CDF_CHAR     { "time_series" }
     "DEPEND_0"    CDF_CHAR     { "Epoch" } .
 
   ! RV values were not requested.
@@ -769,8 +778,8 @@
 ! Name              Type     Elements  Dims  Sizes  Variance  Variances
 ! --------          ----     --------  ----  -----  --------  ---------
 
-  "3V3_RAW"       CDF_UINT2      1       0              T
-!  Warning: "3V3_RAW": Not ISTP compliant...
+  "V3V3_RAW"      CDF_UINT2      1       0              T
+
   ! VAR_COMPRESSION: GZIP.6
   ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
   ! VAR_SPARSERECORDS: sRecords.PAD
@@ -781,13 +790,18 @@
   ! Name            Type       Value
   ! --------        ----       -----
 
+    "CATDESC"     CDF_CHAR     { "3V3 bus monitor" }
+    "FIELDNAM"    CDF_CHAR     { "3V3 bus monitor" }
     "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I5" }
     "SCALETYP"    CDF_CHAR     { "linear" }
-    "VALIDMIN"    CDF_UINT2    { 65535 }
+    "VALIDMIN"    CDF_UINT2    { 0 }
     "VALIDMAX"    CDF_UINT2    { 65535 }
     "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "3V3 bus" }
     "DISPLAY_TYPE"
-                  CDF_CHAR     { "Time Series" }
+                  CDF_CHAR     { "time_series" }
     "DEPEND_0"    CDF_CHAR     { "Epoch" } .
 
   ! RV values were not requested.
@@ -812,12 +826,15 @@
     "CATDESC"     CDF_CHAR     { "Should always be 23" }
     "FIELDNAM"    CDF_CHAR     { "Should always be 23" }
     "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I2" }
     "SCALETYP"    CDF_CHAR     { "linear" }
-    "VALIDMIN"    CDF_UINT2    { 65535 }
-    "VALIDMAX"    CDF_UINT2    { 65535 }
+    "VALIDMIN"    CDF_UINT2    { 23 }
+    "VALIDMAX"    CDF_UINT2    { 23 }
     "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "23" }
     "DISPLAY_TYPE"
-                  CDF_CHAR     { "Time Series" }
+                  CDF_CHAR     { "time_series" }
     "DEPEND_0"    CDF_CHAR     { "Epoch" } .
 
   ! RV values were not requested.
@@ -839,14 +856,18 @@
   ! Name            Type       Value
   ! --------        ----       -----
 
+    "CATDESC"     CDF_CHAR     { "CH1 calibration pulse height" }
     "FIELDNAM"    CDF_CHAR     { "CH1 calibration pulse height" }
     "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I5" }
     "SCALETYP"    CDF_CHAR     { "linear" }
-    "VALIDMIN"    CDF_UINT2    { 65535 }
+    "VALIDMIN"    CDF_UINT2    { 0 }
     "VALIDMAX"    CDF_UINT2    { 65535 }
     "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "Pulse height 1" }
     "DISPLAY_TYPE"
-                  CDF_CHAR     { "Time Series" }
+                  CDF_CHAR     { "time_series" }
     "DEPEND_0"    CDF_CHAR     { "Epoch" } .
 
   ! RV values were not requested.
@@ -868,14 +889,18 @@
   ! Name            Type       Value
   ! --------        ----       -----
 
+    "CATDESC"     CDF_CHAR     { "CH2 calibration pulse height" }
     "FIELDNAM"    CDF_CHAR     { "CH2 calibration pulse height" }
     "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I5" }
     "SCALETYP"    CDF_CHAR     { "linear" }
-    "VALIDMIN"    CDF_UINT2    { 65535 }
+    "VALIDMIN"    CDF_UINT2    { 0 }
     "VALIDMAX"    CDF_UINT2    { 65535 }
     "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "Pulse height 2" }
     "DISPLAY_TYPE"
-                  CDF_CHAR     { "Time Series" }
+                  CDF_CHAR     { "time_series" }
     "DEPEND_0"    CDF_CHAR     { "Epoch" } .
 
   ! RV values were not requested.
@@ -897,14 +922,18 @@
   ! Name            Type       Value
   ! --------        ----       -----
 
+    "CATDESC"     CDF_CHAR     { "Sequence number of last command" }
     "FIELDNAM"    CDF_CHAR     { "Sequence number of last command" }
     "FILLVAL"     CDF_UINT4    { 4294967295 }
+    "FORMAT"      CDF_CHAR     { "I5" }
     "SCALETYP"    CDF_CHAR     { "linear" }
-    "VALIDMIN"    CDF_UINT4    { 4294967295 }
-    "VALIDMAX"    CDF_UINT4    { 4294967295 }
+    "VALIDMIN"    CDF_UINT4    { 0 }
+    "VALIDMAX"    CDF_UINT4    { 65535 }
     "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "Command sequence" }
     "DISPLAY_TYPE"
-                  CDF_CHAR     { "Time Series" }
+                  CDF_CHAR     { "time_series" }
     "DEPEND_0"    CDF_CHAR     { "Epoch" }
     "VAR_NOTES"   CDF_CHAR     { "This is a 16-bit counter but has been " -
                                  "promoted to 32 bits so the pad and " -
@@ -934,12 +963,15 @@
                                  "signed" }
     "FIELDNAM"    CDF_CHAR     { "Last time correction" }
     "FILLVAL"     CDF_INT2     { -32768 }
+    "FORMAT"      CDF_CHAR     { "I5" }
     "SCALETYP"    CDF_CHAR     { "linear" }
     "VALIDMIN"    CDF_INT2     { -32768 }
-    "VALIDMAX"    CDF_INT2     { -32768 }
+    "VALIDMAX"    CDF_INT2     { 32767 }
     "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "Time correction" }
     "DISPLAY_TYPE"
-                  CDF_CHAR     { "Time Series" }
+                  CDF_CHAR     { "time_series" }
     "DEPEND_0"    CDF_CHAR     { "Epoch" } .
 
   ! RV values were not requested.
@@ -961,14 +993,18 @@
   ! Name            Type       Value
   ! --------        ----       -----
 
+    "CATDESC"     CDF_CHAR     { "CH1 long-term accumulation rate " }
     "FIELDNAM"    CDF_CHAR     { "CH1 long-term accumulation rate " }
     "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I5" }
     "SCALETYP"    CDF_CHAR     { "linear" }
-    "VALIDMIN"    CDF_UINT2    { 65535 }
+    "VALIDMIN"    CDF_UINT2    { 0 }
     "VALIDMAX"    CDF_UINT2    { 65535 }
     "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "Accumulation rate 1" }
     "DISPLAY_TYPE"
-                  CDF_CHAR     { "Time Series" }
+                  CDF_CHAR     { "time_series" }
     "DEPEND_0"    CDF_CHAR     { "Epoch" } .
 
   ! RV values were not requested.
@@ -990,14 +1026,18 @@
   ! Name            Type       Value
   ! --------        ----       -----
 
+    "CATDESC"     CDF_CHAR     { "CH2 long-term accumulation rate " }
     "FIELDNAM"    CDF_CHAR     { "CH2 long-term accumulation rate " }
     "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I5" }
     "SCALETYP"    CDF_CHAR     { "linear" }
-    "VALIDMIN"    CDF_UINT2    { 65535 }
+    "VALIDMIN"    CDF_UINT2    { 0 }
     "VALIDMAX"    CDF_UINT2    { 65535 }
     "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "Accumulation rate 2" }
     "DISPLAY_TYPE"
-                  CDF_CHAR     { "Time Series" }
+                  CDF_CHAR     { "time_series" }
     "DEPEND_0"    CDF_CHAR     { "Epoch" } .
 
   ! RV values were not requested.
@@ -1019,14 +1059,18 @@
   ! Name            Type       Value
   ! --------        ----       -----
 
+    "CATDESC"     CDF_CHAR     { "Clock correction factor" }
     "FIELDNAM"    CDF_CHAR     { "Internal clock correction" }
     "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I5" }
     "SCALETYP"    CDF_CHAR     { "linear" }
-    "VALIDMIN"    CDF_UINT2    { 65535 }
+    "VALIDMIN"    CDF_UINT2    { 0 }
     "VALIDMAX"    CDF_UINT2    { 65535 }
     "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "Clock correction" }
     "DISPLAY_TYPE"
-                  CDF_CHAR     { "Time Series" }
+                  CDF_CHAR     { "time_series" }
     "DEPEND_0"    CDF_CHAR     { "Epoch" } .
 
   ! RV values were not requested.
@@ -1048,18 +1092,629 @@
   ! Name            Type       Value
   ! --------        ----       -----
 
+    "CATDESC"     CDF_CHAR     { "Packet sequence number" }
     "FIELDNAM"    CDF_CHAR     { "High-order packet sequence counter" }
     "FILLVAL"     CDF_UINT4    { 4294967295 }
+    "FORMAT"      CDF_CHAR     { "I5" }
     "SCALETYP"    CDF_CHAR     { "linear" }
-    "VALIDMIN"    CDF_UINT4    { 4294967295 }
-    "VALIDMAX"    CDF_UINT4    { 4294967295 }
+    "VALIDMIN"    CDF_UINT4    { 0 }
+    "VALIDMAX"    CDF_UINT4    { 65535 }
     "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "Packet sequence" }
     "DISPLAY_TYPE"
-                  CDF_CHAR     { "Time Series" }
+                  CDF_CHAR     { "time_series" }
     "DEPEND_0"    CDF_CHAR     { "Epoch" }
     "VAR_NOTES"   CDF_CHAR     { "This is a 16-bit value promoted to " -
                                  "32-bits to distinguish the pad and " -
                                  "fill values." } .
+
+  ! RV values were not requested.
+
+
+! Variable          Data      Number                 Record   Dimension
+! Name              Type     Elements  Dims  Sizes  Variance  Variances
+! --------          ----     --------  ----  -----  --------  ---------
+
+  "CFLAG"         CDF_UINT2      1       0              T
+
+  ! VAR_COMPRESSION: GZIP.6
+  ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
+  ! VAR_SPARSERECORDS: sRecords.PREV
+  ! (Valid sparserecords: None, sRecords.PAD, sRecords.PREV)
+  ! VAR_PADVALUE: 65534
+
+  ! Attribute       Data
+  ! Name            Type       Value
+  ! --------        ----       -----
+
+    "CATDESC"     CDF_CHAR     { "Command flag bits" }
+    "FIELDNAM"    CDF_CHAR     { "Command flags" }
+    "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I3" }
+    "SCALETYP"    CDF_CHAR     { "linear" }
+    "VALIDMIN"    CDF_UINT2    { 0 }
+    "VALIDMAX"    CDF_UINT2    { 255 }
+    "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "Command flags" }
+    "DISPLAY_TYPE"
+                  CDF_CHAR     { "time_series" }
+    "DEPEND_0"    CDF_CHAR     { "Epoch" }
+    "VAR_NOTES"   CDF_CHAR     { "Contains 8 bits worth of flags, but " -
+                                 "has been promoted to 16 bits for " -
+                                 "sparse padding." } .
+
+  ! RV values were not requested.
+
+
+! Variable          Data      Number                 Record   Dimension
+! Name              Type     Elements  Dims  Sizes  Variance  Variances
+! --------          ----     --------  ----  -----  --------  ---------
+
+  "NBIN"          CDF_UINT1      1       0              T
+
+  ! VAR_COMPRESSION: GZIP.6
+  ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
+  ! VAR_SPARSERECORDS: sRecords.PREV
+  ! (Valid sparserecords: None, sRecords.PAD, sRecords.PREV)
+  ! VAR_PADVALUE: 254
+
+  ! Attribute       Data
+  ! Name            Type       Value
+  ! --------        ----       -----
+
+    "CATDESC"     CDF_CHAR     { "Number of energy edges used for binning" }
+    "FIELDNAM"    CDF_CHAR     { "Number of energy edges" }
+    "FILLVAL"     CDF_UINT1    { 255 }
+    "FORMAT"      CDF_CHAR     { "I3" }
+    "SCALETYP"    CDF_CHAR     { "linear" }
+    "VALIDMIN"    CDF_UINT1    { 4 }
+    "VALIDMAX"    CDF_UINT1    { 128 }
+    "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "Num edges" }
+    "DISPLAY_TYPE"
+                  CDF_CHAR     { "time_series" }
+    "DEPEND_0"    CDF_CHAR     { "Epoch" }
+    "VAR_NOTES"   CDF_CHAR     { "An additional two energy bins are " -
+                                 "added over NBIN: an underflow and an " -
+                                 "overflow bin. So the total number of " -
+                                 "bins is NBIN + 2." } .
+
+  ! RV values were not requested.
+
+
+! Variable          Data      Number                 Record   Dimension
+! Name              Type     Elements  Dims  Sizes  Variance  Variances
+! --------          ----     --------  ----  -----  --------  ---------
+
+  "NACC"          CDF_UINT2      1       0              T
+
+  ! VAR_COMPRESSION: GZIP.6
+  ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
+  ! VAR_SPARSERECORDS: sRecords.PREV
+  ! (Valid sparserecords: None, sRecords.PAD, sRecords.PREV)
+  ! VAR_PADVALUE: 65534
+
+  ! Attribute       Data
+  ! Name            Type       Value
+  ! --------        ----       -----
+
+    "CATDESC"     CDF_CHAR     { "Number of 50 ms accumulations" }
+    "FIELDNAM"    CDF_CHAR     { "Number of accumulations" }
+    "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I3" }
+    "SCALETYP"    CDF_CHAR     { "linear" }
+    "VALIDMIN"    CDF_UINT2    { 1 }
+    "VALIDMAX"    CDF_UINT2    { 40 }
+    "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "Accumulations" }
+    "DISPLAY_TYPE"
+                  CDF_CHAR     { "time_series" }
+    "DEPEND_0"    CDF_CHAR     { "Epoch" } .
+
+  ! RV values were not requested.
+
+
+! Variable          Data      Number                 Record   Dimension
+! Name              Type     Elements  Dims  Sizes  Variance  Variances
+! --------          ----     --------  ----  -----  --------  ---------
+
+  "SHIFT"         CDF_UINT1      1       0              T
+
+  ! VAR_COMPRESSION: GZIP.6
+  ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
+  ! VAR_SPARSERECORDS: sRecords.PREV
+  ! (Valid sparserecords: None, sRecords.PAD, sRecords.PREV)
+  ! VAR_PADVALUE: 254
+
+  ! Attribute       Data
+  ! Name            Type       Value
+  ! --------        ----       -----
+
+    "CATDESC"     CDF_CHAR     { "Coarse gain for both CH1 and CH2" }
+    "FIELDNAM"    CDF_CHAR     { "Coarse gain" }
+    "FILLVAL"     CDF_UINT1    { 255 }
+    "FORMAT"      CDF_CHAR     { "I5" }
+    "SCALETYP"    CDF_CHAR     { "linear" }
+    "VALIDMIN"    CDF_UINT1    { 14 }
+    "VALIDMAX"    CDF_UINT1    { 20 }
+    "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "Coarse gain" }
+    "DISPLAY_TYPE"
+                  CDF_CHAR     { "time_series" }
+    "DEPEND_0"    CDF_CHAR     { "Epoch" } .
+
+  ! RV values were not requested.
+
+
+! Variable          Data      Number                 Record   Dimension
+! Name              Type     Elements  Dims  Sizes  Variance  Variances
+! --------          ----     --------  ----  -----  --------  ---------
+
+  "GAIN1"         CDF_UINT2      1       0              T
+
+  ! VAR_COMPRESSION: GZIP.6
+  ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
+  ! VAR_SPARSERECORDS: sRecords.PREV
+  ! (Valid sparserecords: None, sRecords.PAD, sRecords.PREV)
+  ! VAR_PADVALUE: 65534
+
+  ! Attribute       Data
+  ! Name            Type       Value
+  ! --------        ----       -----
+
+    "CATDESC"     CDF_CHAR     { "CH1 fine gain" }
+    "FIELDNAM"    CDF_CHAR     { "CH1 fine gain" }
+    "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I3" }
+    "SCALETYP"    CDF_CHAR     { "linear" }
+    "VALIDMIN"    CDF_UINT2    { 64 }
+    "VALIDMAX"    CDF_UINT2    { 255 }
+    "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "Fine gain 1" }
+    "DISPLAY_TYPE"
+                  CDF_CHAR     { "time_series" }
+    "DEPEND_0"    CDF_CHAR     { "Epoch" } .
+
+  ! RV values were not requested.
+
+
+! Variable          Data      Number                 Record   Dimension
+! Name              Type     Elements  Dims  Sizes  Variance  Variances
+! --------          ----     --------  ----  -----  --------  ---------
+
+  "GAIN2"         CDF_UINT2      1       0              T
+
+  ! VAR_COMPRESSION: GZIP.6
+  ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
+  ! VAR_SPARSERECORDS: sRecords.PREV
+  ! (Valid sparserecords: None, sRecords.PAD, sRecords.PREV)
+  ! VAR_PADVALUE: 65534
+
+  ! Attribute       Data
+  ! Name            Type       Value
+  ! --------        ----       -----
+
+    "CATDESC"     CDF_CHAR     { "CH2 fine gain" }
+    "FIELDNAM"    CDF_CHAR     { "CH2 fine gain" }
+    "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I3" }
+    "SCALETYP"    CDF_CHAR     { "linear" }
+    "VALIDMIN"    CDF_UINT2    { 64 }
+    "VALIDMAX"    CDF_UINT2    { 255 }
+    "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "Fine gain 2" }
+    "DISPLAY_TYPE"
+                  CDF_CHAR     { "time_series" }
+    "DEPEND_0"    CDF_CHAR     { "Epoch" } .
+
+  ! RV values were not requested.
+
+
+! Variable          Data      Number                 Record   Dimension
+! Name              Type     Elements  Dims  Sizes  Variance  Variances
+! --------          ----     --------  ----  -----  --------  ---------
+
+  "OFF1"          CDF_UINT2      1       0              T
+
+  ! VAR_COMPRESSION: GZIP.6
+  ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
+  ! VAR_SPARSERECORDS: sRecords.PREV
+  ! (Valid sparserecords: None, sRecords.PAD, sRecords.PREV)
+  ! VAR_PADVALUE: 65534
+
+  ! Attribute       Data
+  ! Name            Type       Value
+  ! --------        ----       -----
+
+    "CATDESC"     CDF_CHAR     { "CH1 energy offset" }
+    "FIELDNAM"    CDF_CHAR     { "CH1 energy offset" }
+    "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I5" }
+    "SCALETYP"    CDF_CHAR     { "linear" }
+    "VALIDMIN"    CDF_UINT2    { 0 }
+    "VALIDMAX"    CDF_UINT2    { 65533 }
+    "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "Offset 1" }
+    "DISPLAY_TYPE"
+                  CDF_CHAR     { "time_series" }
+    "DEPEND_0"    CDF_CHAR     { "Epoch" } .
+
+  ! RV values were not requested.
+
+
+! Variable          Data      Number                 Record   Dimension
+! Name              Type     Elements  Dims  Sizes  Variance  Variances
+! --------          ----     --------  ----  -----  --------  ---------
+
+  "OFF2"          CDF_UINT2      1       0              T
+
+  ! VAR_COMPRESSION: GZIP.6
+  ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
+  ! VAR_SPARSERECORDS: sRecords.PREV
+  ! (Valid sparserecords: None, sRecords.PAD, sRecords.PREV)
+  ! VAR_PADVALUE: 65534
+
+  ! Attribute       Data
+  ! Name            Type       Value
+  ! --------        ----       -----
+
+    "CATDESC"     CDF_CHAR     { "CH2 energy offset" }
+    "FIELDNAM"    CDF_CHAR     { "CH2 energy offset" }
+    "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I5" }
+    "SCALETYP"    CDF_CHAR     { "linear" }
+    "VALIDMIN"    CDF_UINT2    { 0 }
+    "VALIDMAX"    CDF_UINT2    { 65533 }
+    "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "Offset 2" }
+    "DISPLAY_TYPE"
+                  CDF_CHAR     { "time_series" }
+    "DEPEND_0"    CDF_CHAR     { "Epoch" } .
+
+  ! RV values were not requested.
+
+
+! Variable          Data      Number                 Record   Dimension
+! Name              Type     Elements  Dims  Sizes  Variance  Variances
+! --------          ----     --------  ----  -----  --------  ---------
+
+  "CF1"           CDF_UINT2      1       0              T
+
+  ! VAR_COMPRESSION: GZIP.6
+  ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
+  ! VAR_SPARSERECORDS: sRecords.PREV
+  ! (Valid sparserecords: None, sRecords.PAD, sRecords.PREV)
+  ! VAR_PADVALUE: 65534
+
+  ! Attribute       Data
+  ! Name            Type       Value
+  ! --------        ----       -----
+
+    "CATDESC"     CDF_CHAR     { "CH1 baseline correction" }
+    "FIELDNAM"    CDF_CHAR     { "CH1 baseline correction" }
+    "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I5" }
+    "SCALETYP"    CDF_CHAR     { "linear" }
+    "VALIDMIN"    CDF_UINT2    { 0 }
+    "VALIDMAX"    CDF_UINT2    { 65535 }
+    "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "Baseline 1" }
+    "DISPLAY_TYPE"
+                  CDF_CHAR     { "time_series" }
+    "DEPEND_0"    CDF_CHAR     { "Epoch" } .
+
+  ! RV values were not requested.
+
+
+! Variable          Data      Number                 Record   Dimension
+! Name              Type     Elements  Dims  Sizes  Variance  Variances
+! --------          ----     --------  ----  -----  --------  ---------
+
+  "CF2"           CDF_UINT2      1       0              T
+
+  ! VAR_COMPRESSION: GZIP.6
+  ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
+  ! VAR_SPARSERECORDS: sRecords.PREV
+  ! (Valid sparserecords: None, sRecords.PAD, sRecords.PREV)
+  ! VAR_PADVALUE: 65534
+
+  ! Attribute       Data
+  ! Name            Type       Value
+  ! --------        ----       -----
+
+    "CATDESC"     CDF_CHAR     { "CH2 baseline correction" }
+    "FIELDNAM"    CDF_CHAR     { "CH2 baseline correction" }
+    "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I5" }
+    "SCALETYP"    CDF_CHAR     { "linear" }
+    "VALIDMIN"    CDF_UINT2    { 0 }
+    "VALIDMAX"    CDF_UINT2    { 65535 }
+    "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "Baseline 2" }
+    "DISPLAY_TYPE"
+                  CDF_CHAR     { "time_series" }
+    "DEPEND_0"    CDF_CHAR     { "Epoch" } .
+
+  ! RV values were not requested.
+
+
+! Variable          Data      Number                 Record   Dimension
+! Name              Type     Elements  Dims  Sizes  Variance  Variances
+! --------          ----     --------  ----  -----  --------  ---------
+
+  "TH1"           CDF_UINT2      1       0              T
+
+  ! VAR_COMPRESSION: GZIP.6
+  ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
+  ! VAR_SPARSERECORDS: sRecords.PREV
+  ! (Valid sparserecords: None, sRecords.PAD, sRecords.PREV)
+  ! VAR_PADVALUE: 65534
+
+  ! Attribute       Data
+  ! Name            Type       Value
+  ! --------        ----       -----
+
+    "CATDESC"     CDF_CHAR     { "CH1 discriminator threshold" }
+    "FIELDNAM"    CDF_CHAR     { "CH1 discriminator threshold" }
+    "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I5" }
+    "SCALETYP"    CDF_CHAR     { "linear" }
+    "VALIDMIN"    CDF_UINT2    { 0 }
+    "VALIDMAX"    CDF_UINT2    { 65535 }
+    "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "Threshold 1" }
+    "DISPLAY_TYPE"
+                  CDF_CHAR     { "time_series" }
+    "DEPEND_0"    CDF_CHAR     { "Epoch" } .
+
+  ! RV values were not requested.
+
+
+! Variable          Data      Number                 Record   Dimension
+! Name              Type     Elements  Dims  Sizes  Variance  Variances
+! --------          ----     --------  ----  -----  --------  ---------
+
+  "TH2"           CDF_UINT2      1       0              T
+
+  ! VAR_COMPRESSION: GZIP.6
+  ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
+  ! VAR_SPARSERECORDS: sRecords.PREV
+  ! (Valid sparserecords: None, sRecords.PAD, sRecords.PREV)
+  ! VAR_PADVALUE: 65534
+
+  ! Attribute       Data
+  ! Name            Type       Value
+  ! --------        ----       -----
+
+    "CATDESC"     CDF_CHAR     { "CH2 discriminator threshold" }
+    "FIELDNAM"    CDF_CHAR     { "CH2 discriminator threshold" }
+    "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I5" }
+    "SCALETYP"    CDF_CHAR     { "linear" }
+    "VALIDMIN"    CDF_UINT2    { 0 }
+    "VALIDMAX"    CDF_UINT2    { 65535 }
+    "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "Threshold 2" }
+    "DISPLAY_TYPE"
+                  CDF_CHAR     { "time_series" }
+    "DEPEND_0"    CDF_CHAR     { "Epoch" } .
+
+  ! RV values were not requested.
+
+
+! Variable          Data      Number                 Record   Dimension
+! Name              Type     Elements  Dims  Sizes  Variance  Variances
+! --------          ----     --------  ----  -----  --------  ---------
+
+  "EDGE1"         CDF_UINT2      1       0              T
+
+  ! VAR_COMPRESSION: GZIP.6
+  ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
+  ! VAR_SPARSERECORDS: sRecords.PREV
+  ! (Valid sparserecords: None, sRecords.PAD, sRecords.PREV)
+  ! VAR_PADVALUE: 65534
+
+  ! Attribute       Data
+  ! Name            Type       Value
+  ! --------        ----       -----
+
+    "CATDESC"     CDF_CHAR     { "Bin edge 1 in ADC space, when in " -
+                                 "NBIN=5 mode" }
+    "FIELDNAM"    CDF_CHAR     { "Bin edge 1" }
+    "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I5" }
+    "SCALETYP"    CDF_CHAR     { "linear" }
+    "VALIDMIN"    CDF_UINT2    { 0 }
+    "VALIDMAX"    CDF_UINT2    { 65535 }
+    "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "EDGE1" }
+    "DISPLAY_TYPE"
+                  CDF_CHAR     { "time_series" }
+    "DEPEND_0"    CDF_CHAR     { "Epoch" } .
+
+  ! RV values were not requested.
+
+
+! Variable          Data      Number                 Record   Dimension
+! Name              Type     Elements  Dims  Sizes  Variance  Variances
+! --------          ----     --------  ----  -----  --------  ---------
+
+  "EDGE2"         CDF_UINT2      1       0              T
+
+  ! VAR_COMPRESSION: GZIP.6
+  ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
+  ! VAR_SPARSERECORDS: sRecords.PREV
+  ! (Valid sparserecords: None, sRecords.PAD, sRecords.PREV)
+  ! VAR_PADVALUE: 65534
+
+  ! Attribute       Data
+  ! Name            Type       Value
+  ! --------        ----       -----
+
+    "CATDESC"     CDF_CHAR     { "Bin edge 2 in ADC space, when in " -
+                                 "NBIN=5 mode" }
+    "FIELDNAM"    CDF_CHAR     { "Bin edge 2" }
+    "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I5" }
+    "SCALETYP"    CDF_CHAR     { "linear" }
+    "VALIDMIN"    CDF_UINT2    { 0 }
+    "VALIDMAX"    CDF_UINT2    { 65535 }
+    "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "EDGE2" }
+    "DISPLAY_TYPE"
+                  CDF_CHAR     { "time_series" }
+    "DEPEND_0"    CDF_CHAR     { "Epoch" } .
+
+  ! RV values were not requested.
+
+
+! Variable          Data      Number                 Record   Dimension
+! Name              Type     Elements  Dims  Sizes  Variance  Variances
+! --------          ----     --------  ----  -----  --------  ---------
+
+  "EDGE3"         CDF_UINT2      1       0              T
+
+  ! VAR_COMPRESSION: GZIP.6
+  ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
+  ! VAR_SPARSERECORDS: sRecords.PREV
+  ! (Valid sparserecords: None, sRecords.PAD, sRecords.PREV)
+  ! VAR_PADVALUE: 65534
+
+  ! Attribute       Data
+  ! Name            Type       Value
+  ! --------        ----       -----
+
+    "CATDESC"     CDF_CHAR     { "Bin edge 3 in ADC space, when in " -
+                                 "NBIN=5 mode" }
+    "FIELDNAM"    CDF_CHAR     { "Bin edge 3" }
+    "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I5" }
+    "SCALETYP"    CDF_CHAR     { "linear" }
+    "VALIDMIN"    CDF_UINT2    { 0 }
+    "VALIDMAX"    CDF_UINT2    { 65535 }
+    "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "EDGE3" }
+    "DISPLAY_TYPE"
+                  CDF_CHAR     { "time_series" }
+    "DEPEND_0"    CDF_CHAR     { "Epoch" } .
+
+  ! RV values were not requested.
+
+
+! Variable          Data      Number                 Record   Dimension
+! Name              Type     Elements  Dims  Sizes  Variance  Variances
+! --------          ----     --------  ----  -----  --------  ---------
+
+  "EDGE4"         CDF_UINT2      1       0              T
+
+  ! VAR_COMPRESSION: GZIP.6
+  ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
+  ! VAR_SPARSERECORDS: sRecords.PREV
+  ! (Valid sparserecords: None, sRecords.PAD, sRecords.PREV)
+  ! VAR_PADVALUE: 65534
+
+  ! Attribute       Data
+  ! Name            Type       Value
+  ! --------        ----       -----
+
+    "CATDESC"     CDF_CHAR     { "Bin edge 4 in ADC space, when in " -
+                                 "NBIN=5 mode" }
+    "FIELDNAM"    CDF_CHAR     { "Bin edge 4" }
+    "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I5" }
+    "SCALETYP"    CDF_CHAR     { "linear" }
+    "VALIDMIN"    CDF_UINT2    { 0 }
+    "VALIDMAX"    CDF_UINT2    { 65535 }
+    "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "EDGE4" }
+    "DISPLAY_TYPE"
+                  CDF_CHAR     { "time_series" }
+    "DEPEND_0"    CDF_CHAR     { "Epoch" } .
+
+  ! RV values were not requested.
+
+
+! Variable          Data      Number                 Record   Dimension
+! Name              Type     Elements  Dims  Sizes  Variance  Variances
+! --------          ----     --------  ----  -----  --------  ---------
+
+  "EDGE5"         CDF_UINT2      1       0              T
+
+  ! VAR_COMPRESSION: GZIP.6
+  ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
+  ! VAR_SPARSERECORDS: sRecords.PREV
+  ! (Valid sparserecords: None, sRecords.PAD, sRecords.PREV)
+  ! VAR_PADVALUE: 65534
+
+  ! Attribute       Data
+  ! Name            Type       Value
+  ! --------        ----       -----
+
+    "CATDESC"     CDF_CHAR     { "Bin edge 5 in ADC space, when in " -
+                                 "NBIN=5 mode" }
+    "FIELDNAM"    CDF_CHAR     { "Bin edge 5" }
+    "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I5" }
+    "SCALETYP"    CDF_CHAR     { "linear" }
+    "VALIDMIN"    CDF_UINT2    { 0 }
+    "VALIDMAX"    CDF_UINT2    { 65535 }
+    "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "EDGE5" }
+    "DISPLAY_TYPE"
+                  CDF_CHAR     { "time_series" }
+    "DEPEND_0"    CDF_CHAR     { "Epoch" } .
+
+  ! RV values were not requested.
+
+
+! Variable          Data      Number                 Record   Dimension
+! Name              Type     Elements  Dims  Sizes  Variance  Variances
+! --------          ----     --------  ----  -----  --------  ---------
+
+  "EDGE6"         CDF_UINT2      1       0              T
+
+  ! VAR_COMPRESSION: GZIP.6
+  ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
+  ! VAR_SPARSERECORDS: sRecords.PREV
+  ! (Valid sparserecords: None, sRecords.PAD, sRecords.PREV)
+  ! VAR_PADVALUE: 65534
+
+  ! Attribute       Data
+  ! Name            Type       Value
+  ! --------        ----       -----
+
+    "CATDESC"     CDF_CHAR     { "Bin edge 6 in ADC space, when in " -
+                                 "NBIN=5 mode" }
+    "FIELDNAM"    CDF_CHAR     { "Bin edge 6" }
+    "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I5" }
+    "SCALETYP"    CDF_CHAR     { "linear" }
+    "VALIDMIN"    CDF_UINT2    { 0 }
+    "VALIDMAX"    CDF_UINT2    { 65535 }
+    "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "EDGE6" }
+    "DISPLAY_TYPE"
+                  CDF_CHAR     { "time_series" }
+    "DEPEND_0"    CDF_CHAR     { "Epoch" } .
 
   ! RV values were not requested.
 
