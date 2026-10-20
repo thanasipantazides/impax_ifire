@@ -1,7 +1,7 @@
 HK,MUX,Side,Raw,Type,Promote,Command,Validmin,Validmax,Description
 FAULT,0,all,0,uint16,1,0,0,65535,Fault status bits
 CFLAG,1,MSB,0,uint8,1,1,0,255,Command flags
-NBIN,1,LSB,0,uint8,0,1,4,128,Number of uniform bins
+NBIN_HK,1,LSB,0,uint8,0,1,4,128,Number of uniform bins
 NACC,2,MSB,0,uint8,1,1,1,40,Number 50ms accumulations
 SHIFT,2,LSB,0,uint8,0,1,14,20,Bin scaling. Coarse gain power of 2
 GAIN1,3,MSB,0,uint8,1,1,64,255,Bin scaling. Fine gain adjust CH1
