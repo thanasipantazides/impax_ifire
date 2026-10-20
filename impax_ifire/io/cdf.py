@@ -15,6 +15,24 @@ fire_l0_skeleton_path = os.path.join(
 def cdf_from_500(
     fields, save_path: str, skeleton_path=fire_l0_skeleton_path, increment=0
 ):
+    """
+    Create a CDF with the packet fields data populated.
+
+    Parameters
+    ----------
+    fields: dict[str, np.ndarray]
+        Keys are names of packet fields, and values are np.ndarrays of those fields spanning time/CCSDS packet index.
+
+    save_path: str
+        Path to folder where the CDF folder should be stored.
+
+    skeleton_path: str
+        Path to the CDF skeleton file. This should have all the global attribute and variable metadata populated already. Should be a real CDF file skeleton, not a text .skt file.
+
+    increment: int
+        Counter to put at the end of the filename
+    """
+
     logical_source = "impax_ifire_l0"
     data_version = "0"
     datestr = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")
@@ -36,7 +54,7 @@ def cdf_from_500(
         "FAULT",
         "CFLAG",
         "NBIN",
-        "NBIN",
+        "NBIN_HK",
         "NACC",
         "SHIFT",
         "GAIN1",
@@ -71,23 +89,11 @@ def cdf_from_500(
         "SEQ",
     ]
 
+    #
     for key in hk_vars:
         if key in fields:
             cdf[key][...] = fields[key]
+
     cdf["BINS_INDEX"][...] = range(0, 130, 1)
+
     return cdf
-
-
-# todo: make this depot path for CDF L0 globally configurable.
-def cdf_from_apid(
-    apid: int,
-    packet: dict,
-    src_file: str,
-    save_path: str,
-):
-    # if apid != packet["CCSDS_APID"]:
-    #     raise ValueError
-
-    cdf = cdf_from_500(packet, src_file, save_path)
-    cdf.close()
-    print(f"wrote {cdf.pathname}")

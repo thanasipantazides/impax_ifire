@@ -15,14 +15,28 @@ from ..util.exceptions import IFireNBinChangedError
 
 __all__ = ["read_file"]
 
+# path to the HK demux CSV file
 demux_file_path = os.path.join(
     os.path.dirname(__file__), "..", "data", "ifire-hk-demux-rules.csv"
 )
 
+# a place to temporarily store L0 CDF files. todo: use tempfile.
 l0_depot = os.path.join(os.path.dirname(__file__), "..", "data", "log")
 
 
 def sparky(arr, end="\n"):
+    """
+    Print out a character grid showing the content of `arr`.
+
+    The character map is:
+        - "." for 0
+        - "o" for 1
+        - "F" for the max value of the type of `arr` (e.g. 255)
+        - "f" for the max value of the type of `arr` minus 1 (e.g. 254)
+        - "O" for everything else.
+
+    To visualize patterns in pretty raw data.
+    """
     tm = np.iinfo(arr.ravel()[0]).max
     map = {0: ".", 1: "o", tm: "F", tm - 1: "f"}
     if len(arr.shape) == 1:
@@ -37,26 +51,31 @@ def sparky(arr, end="\n"):
 
 
 class FireParams(Enum):
+    # minimum allowed value nbin (actual number of energy bins is two larger)
     NBIN_MIN = 4
+    # maximum allowed value nbin (actual number of energy bins is two larger)
     NBIN_MAX = 128
     TOTAL_BINS = 130
     # total number of HK MUX elements. Fields that share a uint16 are only counted once.
     TOTAL_MUX = 32
+    # the APID value for all FIRE packets.
     VALID_APID = 0x500
     # BIN_PAD = 0xFFFF - 1
     FILLVAL = 0xFFFF
 
 
 def ccsds_version_number(k: int, buff: bytes):
-    """Get CCSDS version number of this packet, assuming k is a the beginning of a packet,"""
+    """Get CCSDS version number of this packet, assuming k is a the beginning of a packet."""
     return 7 & (buff[k] >> 5)
 
 
 def ccsds_packet_type(k: int, buff: bytes):
+    """Get CCSDS packet type flag for the packet, assuming k is a the beginning of a packet."""
     return 1 & (buff[k] >> 4)
 
 
 def ccsds_secondary_flag(k: int, buff: bytes):
+    """Get CCSDS flag for secondary header, assuming k is a the beginning of a packet."""
     return 1 & (buff[k] >> 3)
 
 
@@ -69,10 +88,12 @@ def apid(k: int, buff: bytes):
 
 
 def sequence_flag(k: int, buff: bytes):
+    """Get CCSDS sequence flag from header, assuming k is a the beginning of a packet."""
     return 3 & (buff[k + 2] >> 6)
 
 
 def sequence_count(k: int, buff: bytes):
+    """Get CCSDS sequence counter from header, assuming k is a the beginning of a packet."""
     return 0x3FF & int.from_bytes(buff[k + 2 : k + 3], byteorder="big", signed=False)
 
 
@@ -82,14 +103,21 @@ def length(k: int, buff: bytes):
 
 
 def pflags(k: int, buff: bytes):
+    """Get FIRE packet flags field (as an int), assuming k is a the beginning of a packet."""
     return 0xFF & buff[k + 6]
 
 
 def accum(k: int, buff: bytes):
+    """Get FIRE accumulations counter, assuming k is a the beginning of a packet."""
     return 0xFF & buff[k + 7]
 
 
 def nbin(k: int, buff: bytes):
+    """
+    Get FIRE NBIN field from packet, assuming k is a the beginning of a packet.
+
+    Note that this is the NBIN value reported directly in the science packet, not demux'd from the HK data.
+    """
     nbin = 0xFF & buff[k + 8]
 
     if nbin < 4 or nbin > 128:
@@ -99,17 +127,23 @@ def nbin(k: int, buff: bytes):
 
 
 def mux(k: int, buff: bytes):
+    """Get FIRE HK mux counter value, assuming k is a the beginning of a packet."""
     return 0xFF & buff[k + 9]
 
 
 def hk(k: int, buff: bytes, mux: int):
-    # todo: interpret the hk value via the mux value
+    """
+    Get FIRE HK value, assuming k is a the beginning of a packet.
+
+    Note that this does nothing to interpret the HK value given the current MUX. For that, call `demux_hk()`.
+    """
     return 0xFFFF & int.from_bytes(
         buff[k + 10 : k + 12], byteorder="little", signed=False
     )
 
 
 def ttag(k: int, buff: bytes):
+    """Get FIRE time tag value, assuming k is a the beginning of a packet."""
     return 0xFFFFFFFF & int.from_bytes(
         buff[k + 12 : k + 16], byteorder="little", signed=False
     )
@@ -140,14 +174,33 @@ def rate2(k: int, buff: bytes):
 
 
 def bins(k: int, buff: bytes, pflags: int, nbin: int):
+    """
+    Get values of FIRE energy bins (in ADC space) for both detector channels.
+
+    The number of energy bins used is dynamically configurable in the instrument. A placeholder sentinel value (`FireParams.FILLVAL.value`, nominally 255) is used when a bin is not populated by the current instrument configuration.
+
+    A bin may not be populated if the `NBIN` count does not include the bin. The total number of bins used per channel is `NBIN + 2`: `NBIN` evenly spaced energy bins plus an overflow plus an underflow energy bin.
+    If `NBIN == 5`, custom energy edges (`EDGE1-EDGE5`) are used for the bin edges.
+
+    All bins for a given channel may be deactivated by bits set in the `pflags` field. If `ENACH1 == 0` in `pflags`, channel 1 is disabled, and its bins will all be filled with `FireParams.FILLVAL.value`.
+
+    Returns
+    -------
+    bins_ch1: np.array(np.uint8)
+        1D array of energy bins, with empty values filled by `FireParams.FILLVAL.value`.
+
+    bins_ch2: np.array(np.uint8)
+        1D array of energy bins, with empty values filled by `FireParams.FILLVAL.value`.
+
+    """
 
     enach1 = 1 & (pflags >> 7)
     enach2 = 1 & (pflags >> 6)
 
     nbytes = 2 * (nbin + 2)
 
-    # fill up the bins with NaNs for any channel which is not enabled.
-    #   todo: consider using a uint16 for this. Which does not support NaN. So a sentinel missing value would be needed.
+    # fill up the bins with FILLVALs for any channel which is not enabled.
+    #   todo: consider using a uint16 for this. As-is, a totally full (but not rolling over) bin would be indistinguishable from a FILLVAL.
 
     bins_ch1 = np.full(
         FireParams.TOTAL_BINS.value, FireParams.FILLVAL.value, dtype=np.uint16
@@ -183,14 +236,19 @@ def bins(k: int, buff: bytes, pflags: int, nbin: int):
 
 
 def parse_fire(file: str, start_offset: int = 0):
+    """
+    Parse all CCSDS packets in a given `file`.
+
+    Returns
+    -------
+    results: dict[str, np.ndarray]
+        A dictionary mapping string names for fields into ndarrays. The first index in the array spans time i.e. packet counter. Most fields only have on index. The fields `"BINS_CH1"` and `"BINS_CH2"` have a second index which spans energy bin (in ADC space).
+
+    """
     with open(file, "rb") as f:
         buff = f.read()
 
-    # wrapper type of the whole thing should be dict[np.ndarray]
-    #   to build: make an ndarray for each field and append through parsing.
-    #   at the end: add keys and make it a dict.
-
-    # numpy structured array (name, type, [shape]). Covers the whole packet EXCEPT bins1 and bins2:
+    # numpy structured array (name, type, [shape]). Covers the whole packet EXCEPT demuxed HK data. Also, bitfields are not broken out.
     ptype = np.dtype(
         [
             ("CCSDS_VERSION_NUMBER", np.uint8),
@@ -225,7 +283,7 @@ def parse_fire(file: str, start_offset: int = 0):
         id = apid(k, buff)
         seq_flag = sequence_flag(k, buff)
         seq_count = sequence_count(k, buff)
-        L = length(k, buff)
+        longness = length(k, buff)
 
         assert packet_type == 0
 
@@ -260,7 +318,7 @@ def parse_fire(file: str, start_offset: int = 0):
                 id,
                 seq_flag,
                 seq_count,
-                L,
+                longness,
                 this_pflags,
                 this_accum,
                 this_nbin,
@@ -278,7 +336,7 @@ def parse_fire(file: str, start_offset: int = 0):
 
         res = np.append(res, np.array(thisp, dtype=ptype))
 
-        k += 6 + L + 1
+        k += 6 + longness + 1
 
     # turn this into a dict, CCSDSPy wannabe
     d = {name: res[name] for name in ptype.names}
@@ -286,6 +344,11 @@ def parse_fire(file: str, start_offset: int = 0):
 
 
 def promote(base: str):
+    """
+    Hacky way to turn a numpy int type into the next one up.
+
+    E.g. `np.uint8` becomes `np.uint16`. Or same for the signed integers.
+    """
     if base == "uint8":
         return "uint16"
     elif base == "uint16":
@@ -303,6 +366,7 @@ def promote(base: str):
 
 
 def first_after(arr, k, ignore=0):
+    """Find first non-`ignore` value in `arr` at or after index `k`."""
     for i, v in enumerate(arr):
         if i >= k and v != ignore:
             return v
@@ -310,6 +374,7 @@ def first_after(arr, k, ignore=0):
 
 
 def first_before(arr, k, ignore=0):
+    """Find first non-`ignore` value in `arr` before index `k`."""
     for i, v in enumerate(arr):
         if i < k and v != ignore:
             return v
@@ -317,6 +382,28 @@ def first_before(arr, k, ignore=0):
 
 
 def align_command_hk(p, commandables: list[str], fills: dict):
+    """
+    Align multiplexed command HK values to the earliest one.
+
+    Some FIRE HK fields are set by OBC command. But all FIRE HK fields are multiplexed; i.e. each FIRE packet includes one of 32 possible FIRE HK fields. So feedback for OBC commands arrives incrementally and gives the impression that some configuration values are changing slowly, when in fact they have all changed at once.
+
+    When we work with the FIRE data, it is advantageous to have all the OBC-commanded HK fields change together, instead of one-by-one. This function lines up all OBC-commanded FIRE HK fields each time they change.
+
+    Parameters
+    ----------
+    p: dict[str, np.ndarray]
+        The output of `demux_hk`, a dictionary labeling each array, with each array spanning time/packet index.
+    commandable: list[str]
+        A list of the commandable fields in FIRE.
+    fills: dict
+        A dictionary, with the same keys as p, and values the CDF FILLVAL values for each key. This is necessary because _some_ types are promoted to wider types in parsing.
+
+    Returns
+    -------
+    p: dict[str, np.ndarray]
+        The same as the input `p` dictionary but with the values of the `commandable` keys changed to be aligned.
+    """
+
     # find all indices where any commandable value has changed:
     last_values = {}
     change_indices = []
@@ -357,6 +444,26 @@ def align_command_hk(p, commandables: list[str], fills: dict):
 
 
 def demux_hk(p, rules: str = demux_file_path):
+    """
+    Demultiplex the FIRE housekeeping data.
+
+    FIRE housekeeping data is delivered piecemeal in science packets. Each new packet gives a new HK field. By inspecting the value in the MUX field we can figure out how to interpret the HK field.
+
+    After demultiplexing the HK, this function also calls `align_command_hk` to manually time-align a subset of the HK fields, which are commanded parameters in FIRE.
+
+    Parameters
+    ----------
+    p: dict[str, np.ndarray]
+        The output of `parse_fire`, a dictionary labeling a bunch of numpy arrays, one for each field in the CCSDS packet.
+
+    rules: str
+        Path to a CSV file with names and rules for handling FIRE HK data.
+
+    Returns
+    -------
+    p: dict[str, np.ndarray]
+        The same as the input `p` dictionary but with some more keys for all the demultiplexed HK data.
+    """
 
     with open(rules, "r") as f:
         reader = csv.DictReader(f)
@@ -434,7 +541,7 @@ def demux_hk(p, rules: str = demux_file_path):
 
 def read_file(data_filename):
     """
-    Read a file.
+    Read a raw telemetry file and create a CDF L0 file from it.
 
     Parameters
     ----------
@@ -443,15 +550,15 @@ def read_file(data_filename):
 
     Returns
     -------
-    data: list[str]
-        A list of paths to CDF files created from raw telemetry data.
+    data: str
+        A path to the CDF file created from the telemetry data.
 
-    Raises
-    ------
-    IFireNBinChangedError
 
     Examples
     --------
+    .. code-block:: python
+        cdf_path = read_file("path/to/raw/ifire_20261019050403.tlm")
+
     """
 
     p = parse_fire(data_filename)
@@ -459,32 +566,6 @@ def read_file(data_filename):
     cdf = cdf_from_500(p, l0_depot)
 
     return cdf
-
-    # below: tearing off new files whenever nbin changes:
-    all_cdfs = []
-    inc = 0
-    start_offset = 0
-    still_workin = True
-    while still_workin:
-        try:
-            p = parse_fire(data_filename, start_offset)
-            p = demux_hk(p)
-            cdf = cdf_from_500(p, l0_depot, increment=inc)
-            all_cdfs.append(cdf.pathname)
-            # if we make it down here, file is done cooking.
-            still_workin = False
-            print("done and normal.")
-        except IFireNBinChangedError as e:
-            start_offset = e.args[0]
-            # print(f"splitting telemetry file at offset: {start_offset:#x}")
-            partial = e.args[1]
-            p = demux_hk(partial)
-            cdf = cdf_from_500(p, l0_depot, increment=inc)
-            all_cdfs.append(cdf.pathname)
-            inc += 1
-            continue
-
-    return all_cdfs
 
 
 if __name__ == "__main__":
