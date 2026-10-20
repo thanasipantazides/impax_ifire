@@ -1189,6 +1189,46 @@
 ! Name              Type     Elements  Dims  Sizes  Variance  Variances
 ! --------          ----     --------  ----  -----  --------  ---------
 
+  "NBIN_HK"          CDF_UINT1      1       0              T
+
+  ! VAR_COMPRESSION: GZIP.6
+  ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
+  ! VAR_SPARSERECORDS: sRecords.PREV
+  ! (Valid sparserecords: None, sRecords.PAD, sRecords.PREV)
+  ! VAR_PADVALUE: 254
+
+  ! Attribute       Data
+  ! Name            Type       Value
+  ! --------        ----       -----
+
+    "CATDESC"     CDF_CHAR     { "Number of energy edges used for binning, sampled from HK data" }
+    "FIELDNAM"    CDF_CHAR     { "Number of energy edges" }
+    "FILLVAL"     CDF_UINT1    { 255 }
+    "FORMAT"      CDF_CHAR     { "I3" }
+    "SCALETYP"    CDF_CHAR     { "linear" }
+    "VALIDMIN"    CDF_UINT1    { 4 }
+    "VALIDMAX"    CDF_UINT1    { 128 }
+    "VAR_TYPE"    CDF_CHAR     { "data" }
+    "UNITS"       CDF_CHAR     { "[]" }
+    "LABLAXIS"    CDF_CHAR     { "Num edges" }
+    "DISPLAY_TYPE"
+                  CDF_CHAR     { "time_series" }
+    "DEPEND_0"    CDF_CHAR     { "Epoch" }
+    "VAR_NOTES"   CDF_CHAR     { "An additional two energy bins are " -
+                                 "added over NBIN_HK: an underflow and " -
+                                 "an overflow bin. So the total number " -
+                                 "of bins is NBIN_HK + 2. In contrast " - 
+                                 "NBIN, this variable is sampled from " -
+                                 "multiplexed HK data (but should be " -
+                                 "identical to NBIN)." } .
+
+  ! RV values were not requested.
+
+
+! Variable          Data      Number                 Record   Dimension
+! Name              Type     Elements  Dims  Sizes  Variance  Variances
+! --------          ----     --------  ----  -----  --------  ---------
+
   "NACC"          CDF_UINT2      1       0              T
 
   ! VAR_COMPRESSION: GZIP.6
