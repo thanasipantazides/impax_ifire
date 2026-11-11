@@ -21,16 +21,9 @@ from astropy.wcs import WCS
 from ndcube import NDCollection, NDCube
 from swxsoc.swxdata import SWXData
 
-from ..io.cdf import cdf_from_500
 from ..util.exceptions import IFireNBinChangedError
 
 __all__ = ["read_file"]
-
-# path to the HK demux CSV file
-demux_file_path = os.path.join(
-    os.path.dirname(__file__), "..", "data", "ifire-hk-demux-rules.csv"
-)
-
 
 # path to the FIRE packet fields config file
 config_path = os.path.join(os.path.dirname(__file__), "..", "data", "ifire-fields.csv")
