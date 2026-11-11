@@ -4,11 +4,22 @@ This module provides a generic file reader.
 
 import csv
 import os
+import pdb
 import sys
+from copy import deepcopy
 from enum import Enum
 from multiprocessing import Value
+from types import NotImplementedType
 
 import numpy as np
+from astropy import units as u
+from astropy.nddata import NDData
+from astropy.table import Column, Table
+from astropy.time import Time
+from astropy.timeseries import TimeSeries
+from astropy.wcs import WCS
+from ndcube import NDCollection, NDCube
+from swxsoc.swxdata import SWXData
 
 from ..io.cdf import cdf_from_500
 from ..util.exceptions import IFireNBinChangedError
@@ -20,8 +31,173 @@ demux_file_path = os.path.join(
     os.path.dirname(__file__), "..", "data", "ifire-hk-demux-rules.csv"
 )
 
+
+# path to the FIRE packet fields config file
+config_path = os.path.join(os.path.dirname(__file__), "..", "data", "ifire-fields.csv")
+
 # a place to temporarily store L0 CDF files. todo: use tempfile.
 l0_depot = os.path.join(os.path.dirname(__file__), "..", "data", "log")
+
+
+def uptype(T: str):
+    """Promote a Numpy type string (e.g. uint8, int32, float64, etc) to the next type up."""
+    base = T.rstrip("0123456789")
+    size = T[len(base) :]
+    size = int(size, base=10)
+    Tstr = base + str(2 * size)
+    return np.dtype(Tstr)
+
+
+class TelemetryElement:
+    def __init__(
+        self,
+        icd_name: str = "",
+        cdf_fieldnam: str = "",
+        offset: int = 0,
+        width: int = 8,
+        endian: str = "big",
+        is_hk: bool = False,
+        is_bins: int = 0,
+        hk_mux: int = -1,
+        hk_rightshift: int = 0,
+        promote: bool = False,
+        hk_command: bool = False,
+        validmin: int | float = 0,
+        validmax: int | float = 255,
+        L0_type=np.uint8,
+        L1_type=np.uint8,
+        L0_unit: str | int = 1,
+        L1_unit: str | int = 1,
+        L0L1_rule=lambda x: x,
+        description: str = "",
+    ):
+        self.icd_name = icd_name
+        self.cdf_fieldnam = cdf_fieldnam
+        self.offset = offset
+        self.width = width
+        self.endian = endian
+        self.is_hk = is_hk
+        self.is_bins = is_bins
+        self.promote = promote
+        self.hk_mux = hk_mux
+        self.hk_rightshift = hk_rightshift
+        self.hk_command = hk_command
+        self.validmin = validmin
+        self.validmax = validmax
+        self.L0_type = np.dtype(L0_type)
+        self.L1_type = np.dtype(L1_type)
+        self.L0_unit = L0_unit
+        self.L1_unit = L1_unit
+        self.L0L1_rule = L0L1_rule
+        self.description = description
+
+        typename = str(self.L0_type)
+        if self.promote:
+            self.L0_type = uptype(typename)
+
+        # set CDF fillval appropriately based on this type:
+        if "float" in typename or "double" in typename:
+            self.fillval = -1.0e31
+        elif "uint" in typename:
+            self.fillval = np.iinfo(self.L0_type).max
+        elif "int" in typename:
+            self.fillval = np.iinfo(self.L0_type).min
+        else:
+            raise ValueError
+
+        # to populate from parsed data:
+        self.L0_value = []
+        self.L1_value = []
+
+    def parse(self, buff: bytes):
+        """Parse the buffer based on this field's offset/width parameters. Start of buff is the start of a CCSDS packet."""
+        # if self.is_hk:
+        #     raise ValueError
+
+        kstart = self.offset // 8
+        kend = kstart + 1 + (self.width - 1) // 8
+
+        if kend >= len(buff):
+            raise IndexError
+
+        L0_signedtype = np.issubdtype(self.L0_type, np.signedinteger)
+
+        # always interpret buffer as unsigned, even if resultant should be signed.
+        # we still need to shift and mask.
+        raw = int.from_bytes(buff[kstart:kend], byteorder=self.endian, signed=False)
+
+        shift = 8 * kend - (self.offset + self.width)
+        mask = 2**self.width - 1
+
+        val = mask & (raw >> shift)
+
+        # if self.icd_name == "MUX" or self.icd_name == "CCSDS_APID":
+        #     print(f"{self.icd_name}-raw: {val}")
+        #     print(f"  shift: {shift}")
+        #     print(f"   kend: {kend}")
+        #     print(f"    raw: {raw}")
+
+        # 2's complement if this is to be a signed integer:
+        if L0_signedtype:
+            if val & (1 << (self.width - 1)):
+                val -= 1 << self.width
+
+        return val
+
+    def parseu(self, buff: bytes):
+        val = self.parse(buff)
+        valu = u.Quantity(val, self.L0_unit, self.L0_type)
+        return valu
+
+    def append_parse(self, buff: bytes):
+        """Parse the buffer based on this field's offset/width, append result to self.L0_value."""
+
+        v = self.parse(buff)
+        self.L0_value.append(v)
+
+    def rectify(self):
+        """Once `self.L0_value` is fully populated, convert to Numpy array of appropriate type and add units."""
+        return u.Quantity(self.L0_value, self.L0_unit, dtype=self.L0_type)
+
+    def map_L0L1(self, *args):
+        """Map this field's level 0 data into level 1."""
+        if self.L0L1_rule.__code__.co_argcount == 1:
+            self.L1_value = self.L0L1_rule(self.L0_value)
+        else:
+            self.L1_value = self.L0L1_rule(self.L0_value, *args)
+
+
+def telemetry_config(csv_filename=config_path):
+    telemetry_config = {}
+    with open(csv_filename, "r") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            if row["icd_name"] == "BINS1" or row["icd_name"] == "BINS2":
+                continue
+
+            tlm = TelemetryElement(
+                icd_name=row["icd_name"],
+                cdf_fieldnam=row["cdf_name"],
+                offset=int(row["offset"], base=10),
+                width=int(row["width"], base=10),
+                endian=row["endian"],
+                is_hk=bool(int(row["is_hk"], base=10)),
+                is_bins=int(row["is_bins"], base=10),
+                hk_mux=int(row["hk_mux"], base=10),
+                hk_rightshift=int(row["hk_rightshift"], base=10),
+                promote=bool(int(row["promote"], base=10)),
+                hk_command=bool(int(row["hk_command"], base=10)),
+                validmin=int(row["validmin"], base=10),
+                validmax=int(row["validmax"], base=10),
+                L0_type=row["level0_type"],
+                L1_type=row["level1_type"],
+                L0_unit=row["level0_unit"],
+                L1_unit=row["level1_unit"],
+                L0L1_rule=row["level0_1_map"],
+                description=row["description"],
+            )
+            telemetry_config[tlm.icd_name] = tlm
+    return telemetry_config
 
 
 def sparky(arr, end="\n"):
@@ -443,7 +619,7 @@ def align_command_hk(p, commandables: list[str], fills: dict):
     return p
 
 
-def demux_hk(p, rules: str = demux_file_path):
+def demux_hk(p: dict):
     """
     Demultiplex the FIRE housekeeping data.
 
@@ -463,80 +639,171 @@ def demux_hk(p, rules: str = demux_file_path):
     -------
     p: dict[str, np.ndarray]
         The same as the input `p` dictionary but with some more keys for all the demultiplexed HK data.
+    fills: dict[str, int]
+        The same keys as input `p` dictionary but the values are the FILLVAL value for each field. Some fields are promoted to larger types in `demux_hk` to avoid using their max value as a FILLVAL. So this tells you the real FILLVAL.
     """
 
-    with open(rules, "r") as f:
-        reader = csv.DictReader(f)
-        mux_map = {}
-        # make a dict of the demux data, keyed by HK name:
-        for row in reader:
-            mux_map[row["HK"]] = {
-                "MUX": int(row["MUX"]),
-                "HK": row["HK"],
-                "Side": row["Side"],
-                "Type": row["Type"],
-                "Raw": int(row["Raw"]),
-                "Promote": int(row["Promote"]),
-                "Command": int(row["Command"]),
-                "Description": row["Description"],
-            }
+    tlm_conf = telemetry_config()
 
     fills = {}
-    for key, val in mux_map.items():
-        # don't handle the static items here.
-        # todo: maybe do handle them here actually, raise if they change, etc.
-        # if val["Command"]:
-        #     # something something len(set(...))
-        #     continue
+    for key, val in tlm_conf.items():
+        if not val.is_hk:
+            continue
 
-        if val["Promote"]:
-            this_type = np.dtype(promote(val["Type"]))
-        else:
-            this_type = np.dtype(val["Type"])
+        # an array full of the max value of the eventual CDF type.
+        res = np.full(len(p["HK"]), val.fillval, dtype=val.L0_type)
 
-        # maximum value of the base type of this field, use as bitmask
-        mask = np.iinfo(val["Type"]).max
-        # maximum value of the promoted type of this field.
-        #   ASSUMED to be equal to CDF FILLVAL.
-        typemax = np.iinfo(this_type).max
-        # an array full of typemaxes.
-        res = np.full(len(p["HK"]), typemax, dtype=this_type)
+        # parse the HK data (at the timesteps indicated by MUX) as ints
+        res[p["MUX"] == val.hk_mux] = (
+            (p["HK"][p["MUX"] == val.hk_mux]) >> val.hk_rightshift
+        ) & (2**val.width - 1)
 
-        # little endian: >> for LSB and mask for MSB.
-        if val["Side"] == "LSB":
-            shift = 8
-        else:
-            shift = 0
-
-        # for the indices where this HK is selected by the mux,
-        #   1. cast to correct type
-        #   2. do any shifting and masking needed
-        res[p["MUX"] == val["MUX"]] = (
-            (p["HK"][p["MUX"] == val["MUX"]]) >> shift
-        ) & mask
-
-        name = val["HK"]
-
-        # print(f"{name}: {shift=}, {mask=}")
-
-        if val["Raw"]:
-            name += "_RAW"
+        name = val.icd_name
 
         p[name] = res
-        fills[name] = typemax
+        fills[name] = val.fillval
 
     # now, align all command fields to the first command field that changed
+    # todo: add pflags here?
     commandables = []
-    for k in mux_map:
-        if mux_map[k]["Command"]:
-            if mux_map[k]["Raw"]:
-                commandables.append(k + "_RAW")
-            else:
-                commandables.append(k)
+    for k in tlm_conf:
+        if tlm_conf[k].hk_command:
+            commandables.append(k)
 
     p = align_command_hk(p, commandables, fills)
 
-    return p
+    return p, fills
+
+
+def make_timeseries(p, fills):
+    tlm_config = telemetry_config()
+
+    # base_epoch = "2000-01-01T00:00:00"
+
+    # todo: correct for rollover.
+    #   FIRE ttag counts 10 ms per LSB, so divide by 100.0 to seconds
+    t = p["TTAG"].astype(np.float64) / 100.0 * u.s
+    t_gps = Time(t, format="gps")
+    ddata = {}
+
+    # make an empty bins support variable (record-varying).
+    #   These are the values of the energy bin edges.
+    #   This is padded out to 130 energy bins, the largest possible value.
+    #   Unused bins (based on dynamic NBIN value) get the FILLVAL.
+    #   This ebins variable is used as the DEPEND_1 value for ADC-space spectra.
+    #   In further-up data levels, ebins should be transformed to the energy-space bin boundaries.
+    ebins = np.full(
+        (len(p["NBIN"]), FireParams.TOTAL_BINS.value),
+        np.iinfo(p["NBIN"][0].dtype).max,
+        dtype=p["NBIN"].dtype,
+    )
+    # At each timestep in the record, update the number of (evenly-spaced) bins
+    #   based on the current NBIN value.
+    for k in range(len(p["NBIN"])):
+        these_bins = np.arange(0, p["NBIN"][k] + 2, 1, dtype=p["NBIN"].dtype)
+        ebins[k, 0 : len(these_bins)] = these_bins
+
+    # Format the bins into an NDData object as SWXData desires us to.
+    ebins_support = NDData(
+        data=ebins,
+        meta={"DEPEND_0": "Epoch", "CATDESC": "ADC bin edges", "VAR_TYPE": "data"},
+    )
+    support = {"ebins": ebins_support}
+
+    # Make valid columns for building a TimeSeries
+    #   by applying units and types to each field in p:
+    collectable = []
+    spectrum_index = 1
+    for k in p:
+        if len(p[k].shape) == 1:
+            # give columns of TimeSeries the desired CDF variable names:
+            cname = tlm_config[k].cdf_fieldnam
+            ddata[cname] = u.Quantity(p[k], tlm_config[k].L0_unit, dtype=p[k][0].dtype)
+
+        # For the spectra, format these especially using WCS (for SWXData):
+        elif len(p[k].shape) == 2:
+            espectrum_cs = WCS(naxis=2)
+            espectrum_cs.wcs.ctype = ["EBIN", "TIME"]
+            espectrum_cs.wcs.cname = ["energy_bin", "time"]
+            espectrum_cs.wcs.cunit = ["ct", "s"]
+            # why not [0,0]?
+            espectrum_cs.wcs.crpix = [1, 1]
+            espectrum_cs.wcs.crval = [0, 0]
+            espectrum_cs.wcs.cdelt = [1, 1]
+
+            espectrum = (
+                "espectrum" + str(spectrum_index),
+                NDCube(
+                    data=p[k],
+                    wcs=espectrum_cs,
+                    unit="ct",
+                    meta={
+                        "CATDESC": "ADC counts per bin",
+                        "VAR_TYPE": "data",
+                        "DEPEND_0": "Epoch",
+                        "DEPEND_1": "ebins",
+                    },
+                ),
+            )
+
+            collectable.append(espectrum)
+            spectrum_index += 1
+
+    # Collect the spectra for SWXData:
+    ndc = NDCollection(collectable)
+
+    # todo: confirm epoch with Josh
+    ts = TimeSeries(time=t_gps, data=ddata)
+
+    return ts, ndc, support
+
+
+def make_cdf(
+    ts: TimeSeries, ndc: NDCollection, support: dict, save_dir: str = l0_depot
+):
+    """Save the packet data as a CDF file.
+
+    This uses the swxsoc.swxdata.SWXData interface to construct the CDF.
+
+    Parameters
+    ----------
+    ts: TimeSeries
+        An astropy TimeSeries with a column called `time`. The columns of this table become scalar records in the CDF file. Spectra (or other nonscalar records) should be passed in the `ndc` argument. For FIRE data, `ts` should include all packet fields except the bin data and the bin indices.
+
+    ndc: NDCollection
+        Contains the spectral data that varies in time. For FIRE, this includes `tuple(name: str, data: NDCube)` for each of the two channels. The NDCube contains WCS information on the spectrum at each timestep, and meta data conforming to the CDF standard.
+
+    support: dict
+        Contains support data that may vary in time. For FIRE, one key `ebins` points to an `NDData` record of the bin centers used for the spectral data. These bins are variable in time and depend on a configured value from the flight computer. With the exception of the special `NBIN==5` mode, the bins are evenly spaced. The lowest and highest bins are underflow and overflow respectively.
+
+    Returns
+    -------
+    cdf: str
+        Path to the CDF file created from this data.
+
+    """
+    tlm_config = telemetry_config()
+
+    meta = SWXData.global_attribute_template(
+        instr_name="ifire", data_level="l0", version="1.0.0"
+    )
+
+    data = SWXData(timeseries=ts, meta=meta, support=support, spectra=ndc)
+
+    assert len(set(data.timeseries.keys())) == len(data.timeseries.keys())
+    # print(f"timeseries keys: {data.timeseries.keys()}")
+    # print(f"support keys: {data.support.keys()}")
+    # print(f"spectra: {data.spectra.keys()}")
+
+    for k in data.timeseries.keys():
+        tlm_names = list(filter(lambda x: tlm_config[x].cdf_fieldnam == k, tlm_config))
+        if not tlm_names:
+            continue
+        tlm_obj = tlm_config[tlm_names[0]]
+        data.timeseries[k].meta["CATDESC"] = tlm_obj.description
+
+    cdf = data.save(save_dir)
+    return cdf
 
 
 def read_file(data_filename):
@@ -562,9 +829,10 @@ def read_file(data_filename):
     """
 
     p = parse_fire(data_filename)
-    p = demux_hk(p)
-    cdf = cdf_from_500(p, l0_depot)
+    p, fills = demux_hk(p)
+    ts, ndc, support = make_timeseries(p, fills)
 
+    cdf = make_cdf(ts, ndc, support)
     return cdf
 
 

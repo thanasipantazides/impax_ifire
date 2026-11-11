@@ -1,0 +1,63 @@
+icd_name,cdf_name,offset,width,endian,is_hk,is_bins,hk_mux,hk_rightshift,raw,promote,hk_command,validmin,validmax,level0_type,level1_type,level0_unit,level1_unit,level0_1_map,description
+CCSDS_VERSION_NUMBER,CCSDS_version,0,3,big,0,0,-1,-1,-1,0,0,0,0,uint8,uint8,count,count,,CCSDS version
+CCSDS_PACKET_TYPE,CCSDS_type,3,1,big,0,0,-1,-1,-1,0,0,0,0,uint8,uint8,count,count,,CCSDS packet type
+CCSDS_SECONDARY_FLAG,CCSDS_secondary_flag,4,1,big,0,0,-1,-1,-1,0,0,0,0,uint8,uint8,count,count,,CCSDS secondary header flag
+CCSDS_APID,CCSDS_apid,5,11,big,0,0,-1,-1,-1,0,0,1280,1280,uint16,uint16,count,count,,CCSDS APID. For FIRE should be 0x500
+CCSDS_SEQUENCE_FLAG,CCSDS_seq_flag,16,2,big,0,0,-1,-1,-1,0,0,3,3,uint8,uint8,1,1,,CCSDS sequence flags
+CCSDS_SEQUENCE_COUNT,CCSDS_seq_count,18,14,big,0,0,-1,-1,-1,0,0,0,16383,uint16,uint16,count,count,,CCSDS sequence counter
+CCSDS_PACKET_LENGTH,CCSDS_length,32,16,big,0,0,-1,-1,-1,0,0,1,65535,uint16,uint16,count,count,,CCSDS packet length
+PFLAGS,Packet_flags,48,8,little,0,0,-1,-1,-1,1,0,0,255,uint16,uint16,1,1,,Flags data for the packet
+ENACH1,CH1_en,48,1,little,0,0,-1,-1,-1,1,0,0,1,uint8,uint8,1,1,,Packet contains data from CH1
+ENACH2,CH2_en,49,1,little,0,0,-1,-1,-1,1,0,0,1,uint8,uint8,1,1,,Packet contains data from CH2
+CMDACK,Command_ack,50,1,little,0,0,-1,-1,-1,1,0,0,1,uint8,uint8,1,1,,A valid command was received during previous packet
+CMDNACK,Command_nack,51,1,little,0,0,-1,-1,-1,1,0,0,1,uint8,uint8,1,1,,An invalid command was received during previous packet
+HVON,HV_on,52,1,little,0,0,-1,-1,-1,1,0,0,1,uint8,uint8,1,1,,High voltage is on
+LPON,Latch_up_protect_on,53,1,little,0,0,-1,-1,-1,1,0,0,1,uint8,uint8,1,1,,Latch-up protect is on
+TSTON,Test_pulse_on,54,1,little,0,0,-1,-1,-1,1,0,0,1,uint8,uint8,1,1,,Internal test pulser is on
+TSTHT,Pulse_high_amp,55,1,little,0,0,-1,-1,-1,1,0,0,1,uint8,uint8,1,1,,Internal pulser set to high amplitude
+ACCUM,Accumulations,56,8,little,0,0,-1,-1,-1,0,0,0,255,uint8,uint8,count,count,,Number of 50 ms accumulations
+NBIN,NBIN,64,8,little,0,0,-1,-1,-1,0,0,4,128,uint8,uint8,count,count,,Number of energy bin boundaries
+MUX,Mux,72,8,little,0,0,-1,-1,-1,0,0,0,31,uint8,uint8,count,count,,Housekeeping data multiplexer value
+HK,Hk,80,16,little,0,0,-1,-1,-1,0,0,0,65535,uint16,uint16,count,count,,Housekeeping data field
+TTAG,Timetag,96,32,little,0,0,-1,-1,-1,0,0,0,4294967295,uint32,uint32,count,count,,Time tag
+BASE1,Baseline_correction1,128,16,little,0,0,-1,-1,-1,0,0,0,65535,uint16,uint16,count,count,,Digital baseline correction CH1
+BASE2,Baseline_correction2,144,16,little,0,0,-1,-1,-1,0,0,0,65535,uint16,uint16,count,count,,Digital baseline correction CH2
+RATE1,Rate1,160,16,little,0,0,-1,-1,-1,0,0,0,65535,uint16,uint16,count,count,,Discriminator triggers CH1
+RATE2,Rate2,176,16,little,0,0,-1,-1,-1,0,0,0,65535,uint16,uint16,count,count,,Discriminator triggers CH2
+BINS1,Counts1,192,2*NBIN+2,little,0,1,-1,-1,-1,0,0,0,65535,uint16,uint16,count,count,,Binned pulse height data CH1
+BINS2,Counts2,192+2*NBIN+2,2*NBIN+2,little,0,2,-1,-1,-1,0,0,0,65535,uint16,uint16,count,count,,Binned pulse height data CH2
+FAULT,Fault,80,16,little,1,0,0,0,0,1,0,0,65535,uint16,uint16,1,1,,Fault status bits
+CFLAG,Command_flags,80,8,little,1,0,1,0,0,1,1,0,255,uint8,uint8,1,1,,Command flags
+NBIN_HK,NBIN_HK,88,8,little,1,0,1,8,0,0,1,4,128,uint8,uint8,count,count,,Number of uniform bins
+NACC,NACC,80,8,little,1,0,2,0,0,1,1,1,40,uint8,uint8,count,count,,Number 50ms accumulations
+SHIFT,Shift,88,8,little,1,0,2,8,0,0,1,14,20,uint8,uint8,count,count,,Bin scaling. Coarse gain power of 2
+GAIN1,Gain1,80,8,little,1,0,3,0,0,1,1,64,255,uint8,uint8,count,count,,Bin scaling. Fine gain adjust CH1
+GAIN2,Gain2,88,8,little,1,0,3,8,0,1,1,64,255,uint8,uint8,count,count,,Bin scaling. Fine gain adjust CH2
+OFF1,Offset1,80,16,little,1,0,4,0,1,1,1,0,65535,uint16,float32,count,keV,(VAL-16000)/32.7,Bin scaling. Energy oﬀset CH1
+OFF2,Offset2,80,16,little,1,0,5,0,1,1,1,0,65535,uint16,float32,count,keV,(VAL-16000)/32.7,Bin scaling. Energy oﬀset CH2
+CF1,Correction1,80,16,little,1,0,6,0,0,1,1,0,65535,uint16,uint16,count,count,,Baseline correction factor CH1
+CF2,Correction2,80,16,little,1,0,7,0,0,1,1,0,65535,uint16,uint16,count,count,,Baseline correction factor CH2
+TH1,Threshold1,80,16,little,1,0,8,0,1,0,1,0,4095,uint16,float32,count,keV,VAL/2.5,Low level discriminator threshold CH1
+TH2,Threshold2,80,16,little,1,0,9,0,1,0,1,0,4095,uint16,float32,count,keV,VAL/2.5,Low level discriminator threshold CH2
+SEU,SEU_mask,80,16,little,1,0,10,0,1,0,1,0,65535,uint16,float32,count,second,VAL*ACCUM*60/2.3,SEU correction interval mask
+AUTO,Auto_accum,80,16,little,1,0,11,0,1,0,1,0,65535,uint16,float32,count,Hz,VAL/0.05,Auto Accumulate rate limit
+EDGE1,Edge1,80,16,little,1,0,12,0,1,0,1,0,65535,uint16,float32,count,keV,VAL/32.7,Energy edge 1 (for NBIN=5 mode)
+EDGE2,Edge2,80,16,little,1,0,13,0,1,0,1,0,65535,uint16,float32,count,keV,VAL/32.7,Energy edge 2
+EDGE3,Edge3,80,16,little,1,0,14,0,1,0,1,0,65535,uint16,float32,count,keV,VAL/32.7,Energy edge 3
+EDGE4,Edge4,80,16,little,1,0,15,0,1,0,1,0,65535,uint16,float32,count,keV,VAL/32.7,Energy edge 4
+EDGE5,Edge5,80,16,little,1,0,16,0,1,0,1,0,65535,uint16,float32,count,keV,VAL/32.7,Energy edge 5
+EDGE6,Edge6,80,16,little,1,0,17,0,1,0,1,0,65535,uint16,float32,count,keV,VAL/32.7,Energy edge 6
+V5B,Bus5V_voltage,80,16,little,1,0,18,0,1,0,0,0,65535,uint16,float32,count,volt,VAL*0.001615,5V analog supply voltage monitor
+HVI,BusHV_current,80,16,little,1,0,19,0,1,0,0,0,65535,uint16,float32,count,amp,7.3*VAL*806e-12,High voltage current monitor
+DET_TEMP,Detector_temperature,80,16,little,1,0,20,0,1,0,0,0,65535,uint16,float32,count,Celsius,(VAL*806e-6 - 0.5)/10e-3,Detector temperature.
+CPU_TEMP,CPU_temperature,80,16,little,1,0,21,0,1,0,0,0,65535,uint16,float32,count,Celsius,(VAL*806e-6 - 0.76)/2.5e-3 + 31,Processor internal temperature
+V3V3,Bus3V3_voltage,80,16,little,1,0,22,0,1,0,0,0,65535,uint16,float32,count,volt,5000/(VAL+1),3.3V supply voltage monitor
+SPARE_23,Value_23,80,16,little,1,0,23,0,0,0,0,0,65535,uint16,uint16,1,1,,Always 23
+CAL1,Calib_pulse1,80,16,little,1,0,24,0,1,0,0,0,65535,uint16,float32,count,keV,(VAL-16000)/32.7,Calibration pulse height CH1
+CAL2,Calib_pulse2,80,16,little,1,0,25,0,1,0,0,0,65535,uint16,float32,count,keV,(VAL-16000)/32.7,Calibration pulse height CH1
+CMD,Command_seq,80,16,little,1,0,26,0,0,1,0,0,65535,uint16,uint16,count,count,,Sequence number of last command
+TSET,Timeset_correction,80,16,little,1,0,27,0,1,0,0,-32768,32767,int16,int16,count,count,,Correction at last time-set command
+TOT1,Accum_rate1,80,16,little,1,0,28,0,1,0,0,0,65535,uint16,float32,count,Hz,VAL*10/ACCUM,Long term accumulation RATE1
+TOT2,Accum_rate2,80,16,little,1,0,29,0,1,0,0,0,65535,uint16,float32,count,Hz,VAL*10/ACCUM,Long term accumulation RATE2
+CLOCK,Clock_correction,80,16,little,1,0,30,0,0,0,0,0,65535,uint16,uint16,count,count,,Internal clock correction factor
+SEQ,Sequence_count,80,16,little,1,0,31,0,0,1,0,0,65535,uint16,uint16,count,count,,High order packet sequence counter
